@@ -1,0 +1,24 @@
+{
+  "name": "atomic-discord",
+  "version": "1.0.0",
+  "description": "An alternative Discord client made in Atom! ",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/memework/atomic-discord.git"
+  },
+  "author": "heatingdevice",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/memework/atomic-discord/issues"
+  },
+  "homepage": "https://github.com/memework/atomic-discord#readme",
+  "dependencies": {
+    "discord.io": "^2.5.1",
+    "electron": "^1.6.2",
+    "node-notifier": "^5.1.2"
+  }
+}

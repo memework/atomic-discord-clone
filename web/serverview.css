@@ -1,0 +1,153 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Arimo', sans-serif;
+}
+
+html, body {
+  background: #2C2F33;
+  color: #FFF;
+  padding-bottom: 1rem;
+}
+
+#messages {
+  min-height: 50px;
+  float: left;
+  width: 100%;
+  padding-left: 250px;
+  padding-bottom: 2rem;
+  height: calc(100vh - 1rem);
+  overflow-y: auto;
+}
+#messages .message  {
+  padding-top: 50px;
+  padding-left: 50px;
+  margin-left: 1000px;
+  background: #383c41;
+  border: solid 1px #23272A;
+  margin: 0.5rem;
+  border-radius: 0.15rem;
+  padding: 0.2rem;
+
+  white-space: -moz-pre-wrap !important;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  white-space: -webkit-pre-wrap;
+  word-break: break-all;
+  white-space: normal;
+}
+
+img {
+  display: block;
+  background-image: url(http://i.imgur.com/8YsAmq3.gif);
+  background-position: center center;
+}
+
+img.emoji {
+  background: none;
+  height: 22px;
+  width: 22px;
+  white-space: nowrap;
+  display: inline;
+  vertical-align: top;
+}
+
+#messages .message .message-inner {
+  margin-left: 50px;
+}
+
+#messages .message .username {
+  margin: 0;
+  font-weight: normal;
+  font-size: 1.1rem;
+}
+#messages .message .message-inner .content {
+  line-height: 1.5;
+  margin: 0.5rem 0 0;
+}
+
+#channel-container {
+  position: absolute;
+  margin-left: 50px;
+  height: 100vh;
+  overflow-y: auto;
+  width: 200px;
+  float: left;
+  background-color: #303338;
+}
+
+#messages .message .message-inner .images img {
+    max-width: 60%;
+}
+
+
+
+#message-input {
+  display: block;
+  color: inherit;
+  border: solid 1px #23272A;
+  padding: 0.5rem;
+  background-color: #383c41;
+  margin: 0.5rem 0.5rem 0.5rem;
+  width: calc(100% - 74px - 1rem);
+  position: fixed;
+  bottom: 0;
+  border-radius: 3px;
+}
+
+.message-input-wrap {
+  position: fixed;
+  float: bottom;
+  bottom: 0;
+  height: 3rem;
+  width: 100%;
+  margin: 0.5rem 1rem 0 250px;
+  background-color: #303338;
+}
+
+#server-list .server-icon .server-image {
+  display: block;
+  margin: auto;
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+}
+
+.jumbotxt {
+  font-size: 1.5em !important;
+}
+
+#server-list {
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  left: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: #303338;
+}
+
+#server-list .server-icon {
+  margin-top: 10px;
+}
+
+body {
+  margin-top: 0px;
+}
+
+#server-list .server-icon .server-image:hover {
+  filter: blur(4);
+}
+
+.change-message {
+    color: lightgray;
+}
+
+.avatar {
+  position: absoloute;
+  float: left;
+    border-radius: 40px;
+    height: 40px;
+    width: 40px;
+}
