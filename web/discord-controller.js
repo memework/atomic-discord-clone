@@ -143,7 +143,7 @@ function addMessageToDOM(messageInfo, complete) {
 
 
 bot.on("messageUpdate", (oldmsg, newmsg) => {
-    if (oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
+    if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
     let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
     if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
@@ -286,7 +286,9 @@ bot.on("message", function (user, userID, channelID, message, event) {
 });
 */
 
-window.channelID = "303292261263867904"; // "297499424534298624";
+window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
+
+console.log(window.channelID)
 
 window.currentMessages = {
     channelID: window.channelID,
@@ -323,6 +325,7 @@ $(document).ready(function () {
 
 function ChannelChange(channelID, silent) {
     if (window.channelID == channelID) return; // We're already in the channel...
+    window.localStorage.setItem("lastchannel", channelID)
     let channel = bot.channels[channelID];
     if (!channel) return console.log("Skipping channel that doesn't exist");
     let server = bot.servers[channel.guild_id];
@@ -369,7 +372,7 @@ function loadMessages() {
         // before: (window.currentMessages.channelID == channelID ? (window.currentMessages.arr.length > 0 ? window.currentMessages.arr[0].id : undefined) : undefined)
     }, (err, messages) => {
         // messages.reverse();
-        let scrolltobottom = window.currentMessages.channelID == channelID;
+        let scrolltobottom = window.currentMessages.channelID == window.channelID;
         if (scrolltobottom) {
             // messages.reverse();
             for (let itm in messages) {
