@@ -90,7 +90,7 @@ img.emoji {
   padding: 0.5rem;
   background-color: #383c41;
   margin: 0.5rem 0.5rem 0.5rem;
-  width: calc(100% - 74px - 1rem);
+  width: calc(100% - 254px - 1rem);
   position: fixed;
   bottom: 0;
   border-radius: 3px;
