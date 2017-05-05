@@ -424,6 +424,7 @@ function loadMessages() {
 }
 
 function loadServers() {
+    document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
     let servers = bot.servers
     for (let srv in servers) {
         let server = servers[srv];
