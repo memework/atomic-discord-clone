@@ -5,7 +5,8 @@ const messages = document.getElementById("messages")
 const { shell } = require('electron')
 const shortcodes = require('./emojis.json')
 
-window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
+// Uncomment this for first run... I just don't like having to change this every time :^)
+// window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
 let bot = global.bot = new window.Discord.Client({
     token: window.localStorage.getItem("token"),
