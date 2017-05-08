@@ -21,7 +21,8 @@ bot.on("message", function (user, userID, channelID, message, event) {
         serverID: bot.channels[channelID].guild_id,
         messageID: event.d.id,
         message,
-        event
+        event,
+        timestamp: event.d.timestamp
     }, function (nodes) {
         let { avatar, content, images, msgobj, container, deletebtn } = nodes
 
@@ -41,7 +42,7 @@ bot.on("message", function (user, userID, channelID, message, event) {
 })
 
 function addMessageToDOM(messageInfo, complete) {
-    let { user, userID, channelID, messageID, serverID, message, event } = messageInfo
+    let { user, userID, channelID, messageID, serverID, message, event, timestamp } = messageInfo
     message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
     let channel = bot.channels[channelID];
     let serverName = bot.servers[serverID].name;
@@ -68,7 +69,17 @@ function addMessageToDOM(messageInfo, complete) {
     let images = document.createElement("div");
     images.classList = "images";
 
-    for(let short in shortcodes) {
+    let time = document.createElement("time")
+    time.classList = "message-timestamp"
+    time.dateTime = timestamp
+    time.innerText = $.timeago(timestamp)
+    $(time).ready(() => {
+        console.log("HENLO")
+        $(time).timeago()
+    })
+    msgobj.appendChild(time)
+
+    for (let short in shortcodes) {
         let myemotes = ""
         shortcodes[short].split("-").forEach(code => {
             myemotes += twemoji.convert.fromCodePoint(code)
@@ -159,7 +170,8 @@ bot.on("messageUpdate", (oldmsg, newmsg) => {
             d: {
                 author: oldmsg.author
             }
-        }
+        },
+        timestamp: oldmsg.timestamp
     }, function (items) {
         let { content, images } = items
         console.log(document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`))
@@ -179,6 +191,13 @@ bot.on("ready", function () {
         title: "Connected to Discord!",
         message: "Successfully connected to Discord!"
     });
+    window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
+
+    window.currentMessages = {
+        channelID: window.channelID,
+        arr: []
+    }
+    ChannelChange(window.channelID, true);
     console.log("Ready");
     loadServers();
     loadMessages();
@@ -286,19 +305,9 @@ bot.on("message", function (user, userID, channelID, message, event) {
 });
 */
 
-window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
-
-console.log(window.channelID)
-
-window.currentMessages = {
-    channelID: window.channelID,
-    arr: []
-}
-
 $(document).ready(function () {
     let messageInput = document.getElementById('message-input');
 
-    ChannelChange(window.channelID, true);
     // $("#message-input").emojioneArea();
     $("#message-input").keypress(function (e) {
         if (!e) e = window.event;
@@ -366,31 +375,33 @@ function loadMembers(i) {
 let emojiexp = /<:\S*:[0-9]{18}>/gi;
 
 function loadMessages() {
-    bot.getMessages({
+    let options = {
         channelID: window.channelID,
         limit: 100,
-        // before: (window.currentMessages.channelID == channelID ? (window.currentMessages.arr.length > 0 ? window.currentMessages.arr[0].id : undefined) : undefined)
-    }, (err, messages) => {
-        // messages.reverse();
+        before: 0
+    }
+    if(window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
+    bot.getMessages(options, (err, messages) => {
+        let oldScrollHeight = document.getElementById("messages").scrollHeight;
+        // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse();
         let scrolltobottom = window.currentMessages.channelID == window.channelID;
+        console.log(window.currentMessages.channelID, channelID)
         if (scrolltobottom) {
-            // messages.reverse();
             for (let itm in messages) {
-                window.currentMessages.arr.push(messages[itm]);
+                window.currentMessages.arr.unshift(messages[itm]);
             }
         } else {
             window.currentMessages = {
                 channelID: window.channelID,
-                arr: messages
+                arr: messages.reverse()
             }
+            document.getElementById("messages").innerHTML = "";
+            console.log("HENLOO")
+            messages.reverse()
         }
-        document.getElementById("messages").innerHTML = "";
 
-        let thearr = window.currentMessages.arr;
-        thearr.reverse();
-
-        for (let itm in thearr) {
-            let curmsg = thearr[itm];
+        for (let itm in messages) {
+            let curmsg = messages[itm];
 
             if (!curmsg || !curmsg.author) continue;
             let message = curmsg.content;
@@ -400,6 +411,7 @@ function loadMessages() {
             let event = {
                 d: curmsg
             };
+            let timestamp = curmsg.timestamp
 
             addMessageToDOM({
                 user,
@@ -408,7 +420,8 @@ function loadMessages() {
                 serverID: bot.channels[channelID].guild_id,
                 messageID: event.d.id,
                 message,
-                event
+                event,
+                timestamp
             }, function (items) {
                 let { avatar, content, images, msgobj, container, deletebtn } = items
                 container.appendChild(avatar);
@@ -419,10 +432,11 @@ function loadMessages() {
                 msgobj.classList = "message-inner";
                 container.appendChild(msgobj);
                 container.appendChild(deletebtn);
-                document.getElementById("messages").insertBefore(container, null);
+                document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0]);
             })
         }
-        if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+        if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight;
+        else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     });
 }
 
