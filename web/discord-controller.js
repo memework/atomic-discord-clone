@@ -18,7 +18,7 @@ bot.on("message", function (user, userID, channelID, message, event) {
         user,
         userID,
         channelID,
-        serverID: bot.channels[channelID].guild_id,
+        serverID: bot.channels[channelID] ? bot.channels[channelID].guild_id : channelID,
         messageID: event.d.id,
         message,
         event,
@@ -45,9 +45,9 @@ function addMessageToDOM(messageInfo, complete) {
     let { user, userID, channelID, messageID, serverID, message, event, timestamp } = messageInfo
     message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
     let channel = bot.channels[channelID];
-    let serverName = bot.servers[serverID].name;
+    let serverName = bot.servers[serverID] ? bot.servers[serverID].name : "";
     if (window.channelID != channelID) return;
-    document.getElementById("message-input").setAttribute("placeholder", "Message #" + channel.name);
+    document.getElementById("message-input").setAttribute("placeholder", "Message #" + channel.name || "");
     // ChannelChange(channelID);
     window.channelID = channelID;
     // We got a new message
@@ -204,11 +204,22 @@ bot.on("ready", function () {
     loadChannels();
 });
 
+let disconnectsInTimeout = 0
+
 bot.on("disconnect", (err) => {
+    let theTime = new Date().getTime()
     notifier.notify({
         title: "Disconnected to Discord!",
         message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
     });
+    disconnectsInTimeout += 1
+    setInterval(() => {
+        disconnectsInTimeout -= 1
+    }, 60 * 1000)
+    if (disconnectsInTimeout > 10) return notifier.notify({
+        title: "Unable to connect to Discord!",
+        message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 10 times in the last minute!"
+    })
     bot.connect()
     console.log("Error: " + err)
 })
@@ -336,7 +347,7 @@ function ChannelChange(channelID, silent) {
     if (window.channelID == channelID) return; // We're already in the channel...
     window.localStorage.setItem("lastchannel", channelID)
     let channel = bot.channels[channelID];
-    if (!channel) return console.log("Skipping channel that doesn't exist");
+    // if (!channel) return console.log("Skipping channel that doesn't exist");
     let server = bot.servers[channel.guild_id];
     document.title = `#${channel.name} in ${server.name} - ${channel.topic}`;
     if (!silent) {
@@ -346,30 +357,48 @@ function ChannelChange(channelID, silent) {
         document.getElementById("messages").appendChild(changemsg);
     }
     window.channelID = channelID;
+    document.getElementById("member-list").innerHTML = ""
     loadChannels();
     loadMessages();
     loadMembers(0);
 }
 
 function loadMembers(i) {
+    console.log("Ples")
     let members = bot.servers[bot.channels[window.channelID].guild_id].members
     if (i >= Object.keys(members).length) {
-        console.log("Loaded members")
+        return console.log("Loaded members")
     }
-    // data.bot.createDMChannel(members[Object.keys(members)[i]], function (err, res) {
-    //     if(err || !res) {
-    //         console.log(err ? err : "User no exist")
-    //         return loadMembers(++i);
-    //     }
-    //     if (!res.recipient.avatar) {
-    //         res = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
-    //     } else {
-    //         res = `${cdn}/avatars/${id}/${res.recipient.avatar}.webp?size=1024`;
-    //     }
-    //     setTimeout(()=>{
-    //         loadMembers(++i)
-    //     }, 500)
-    // })
+    bot.createDMChannel(Object.keys(members)[i], function (err, res) {
+        console.log("ASH")
+        if (err || !res) {
+            console.log("FU")
+            console.log(err ? err : "User no exist")
+            return setTimeout(() => {
+                loadMembers(++i)
+            }, 500)
+        }
+        if (!res.recipient.avatar) {
+            avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
+        } else {
+            avatarurl = `${cdn}/avatars/${Object.keys(members)[i]}/${res.recipient.avatar}.webp?size=256`;
+        }
+        let container = document.createElement("div")
+        let avatar = document.createElement("img")
+        let username = document.createElement("h2")
+        username.innerText = res.recipient.username
+        avatar.src = avatarurl
+        avatar.classList = "member-list-avatar"
+        container.classList = "member-list-member"
+        username.classList = "member-list-username"
+        container.appendChild(avatar)
+        container.appendChild(username)
+        document.getElementById("member-list").appendChild(container)
+        console.log(container)
+        setTimeout(() => {
+            loadMembers(++i)
+        }, 500)
+    })
 }
 
 let emojiexp = /<:\S*:[0-9]{18}>/gi;
@@ -380,7 +409,7 @@ function loadMessages() {
         limit: 100,
         before: 0
     }
-    if(window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
+    if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
     bot.getMessages(options, (err, messages) => {
         let oldScrollHeight = document.getElementById("messages").scrollHeight;
         // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse();
@@ -467,6 +496,7 @@ function loadServers() {
 
 function loadChannels() {
     document.getElementById("channel-container").innerHTML = "";
+    if(!bot.channels[channelID]) return
     let channels = bot.servers[bot.channels[channelID].guild_id].channels;
     for (let srv in channels) {
         let channel = channels[srv];

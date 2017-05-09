@@ -12,7 +12,7 @@ html, body {
 #messages {
   min-height: 50px;
   float: left;
-  width: 100%;
+  width: calc(100% - 150px);
   padding-left: 250px;
   padding-bottom: 2rem;
   height: calc(100vh - 1rem);
@@ -75,6 +75,34 @@ img.emoji {
   width: 200px;
   float: left;
   background-color: #303338;
+}
+
+#member-list {
+  position: relative;
+  float: right;
+  margin-left: 50px;
+  height: 100%;
+  margin-top: 0px;
+  overflow-y: auto;
+  width: 150px;
+  margin: 0 0;
+  background-color: #303338;
+}
+
+img.member-list-avatar {
+  height: 25px;
+  width: 25px;
+  border-radius: 25px;
+  float: left;
+  white-space: nowrap;
+  display: inline;
+  vertical-align: top;
+}
+
+h2.member-list-username {
+  font-size: 1em;
+  margin-left: 5px;
+  font-weight: bolder;
 }
 
 #messages .message .message-inner .images img {
@@ -147,7 +175,7 @@ body {
 .avatar {
   position: absoloute;
   float: left;
-    border-radius: 40px;
-    height: 40px;
-    width: 40px;
+  border-radius: 40px;
+  height: 40px;
+  width: 40px;  
 }
