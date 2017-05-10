@@ -1,14 +1,22 @@
-const Discord = require("discord.io");
-const notifier = require('node-notifier');
+const IsNode = typeof process == "undefined" ? false : true
+let notifier
+let shell
+if (IsNode) {
+    // const Discord = require("discord.io");
+    notifier = require('node-notifier');
+    shell = require('electron').shell
+}
 const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
-const { shell } = require('electron')
-const shortcodes = require('./emojis.json')
+let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
+$.get("emojis.json", function(data) {
+    shortcodes = data
+})
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
-let bot = global.bot = new window.Discord.Client({
+let bot = new Discord.Client({
     token: window.localStorage.getItem("token"),
     autorun: true
 });
@@ -74,7 +82,6 @@ function addMessageToDOM(messageInfo, complete) {
     time.dateTime = timestamp
     time.innerText = $.timeago(timestamp)
     $(time).ready(() => {
-        console.log("HENLO")
         $(time).timeago()
     })
     msgobj.appendChild(time)
@@ -90,11 +97,11 @@ function addMessageToDOM(messageInfo, complete) {
     args = message.split(/\s/g);
     for (let itm in args) {
         if (urlexp.test(args[itm])) {
-            console.log(args[itm])
             let link = args[itm];
             let anode = document.createElement("a");
             anode.onclick = () => {
-                shell.openExternal(link)
+                if(IsNode) shell.openExternal(link)
+                else window.open(link, '_blank').focus()
             }
             anode.href = "#";
             anode.innerHTML = link;
@@ -123,7 +130,6 @@ function addMessageToDOM(messageInfo, complete) {
 
     let deletebtn = document.createElement("div")
     deletebtn.onclick = function () {
-        console.log(channelID, messageID, typeof channelID, typeof messageID)
         bot.deleteMessage({
             channelID: channelID,
             messageID: messageID
@@ -174,7 +180,6 @@ bot.on("messageUpdate", (oldmsg, newmsg) => {
         timestamp: oldmsg.timestamp
     }, function (items) {
         let { content, images } = items
-        console.log(document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`))
         container.getElementsByTagName("div")[0].replaceChild(content, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.content`)[0])
         container.getElementsByTagName("div")[0].replaceChild(images, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`)[0])
     })
@@ -187,10 +192,12 @@ bot.on("messageDelete", evnt => {
 })
 
 bot.on("ready", function () {
-    notifier.notify({
-        title: "Connected to Discord!",
-        message: "Successfully connected to Discord!"
-    });
+    if(IsNode) {
+        notifier.notify({
+            title: "Connected to Discord!",
+            message: "Successfully connected to Discord!"
+        });
+    }
     window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
 
     window.currentMessages = {
@@ -208,18 +215,23 @@ let disconnectsInTimeout = 0
 
 bot.on("disconnect", (err) => {
     let theTime = new Date().getTime()
-    notifier.notify({
-        title: "Disconnected to Discord!",
-        message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
-    });
+    if(IsNode) {
+        notifier.notify({
+            title: "Disconnected to Discord!",
+            message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
+        });
+    }
     disconnectsInTimeout += 1
     setInterval(() => {
         disconnectsInTimeout -= 1
     }, 60 * 1000)
-    if (disconnectsInTimeout > 10) return notifier.notify({
-        title: "Unable to connect to Discord!",
-        message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 10 times in the last minute!"
-    })
+    if (disconnectsInTimeout > 10) {
+        if (IsNode) notifier.notify({
+            title: "Unable to connect to Discord!",
+            message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 10 times in the last minute!"
+        })
+        return
+    }
     bot.connect()
     console.log("Error: " + err)
 })
@@ -364,15 +376,12 @@ function ChannelChange(channelID, silent) {
 }
 
 function loadMembers(i) {
-    console.log("Ples")
     let members = bot.servers[bot.channels[window.channelID].guild_id].members
     if (i >= Object.keys(members).length) {
         return console.log("Loaded members")
     }
     bot.createDMChannel(Object.keys(members)[i], function (err, res) {
-        console.log("ASH")
         if (err || !res) {
-            console.log("FU")
             console.log(err ? err : "User no exist")
             return setTimeout(() => {
                 loadMembers(++i)
@@ -394,7 +403,6 @@ function loadMembers(i) {
         container.appendChild(avatar)
         container.appendChild(username)
         document.getElementById("member-list").appendChild(container)
-        console.log(container)
         setTimeout(() => {
             loadMembers(++i)
         }, 500)
@@ -414,7 +422,6 @@ function loadMessages() {
         let oldScrollHeight = document.getElementById("messages").scrollHeight;
         // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse();
         let scrolltobottom = window.currentMessages.channelID == window.channelID;
-        console.log(window.currentMessages.channelID, channelID)
         if (scrolltobottom) {
             for (let itm in messages) {
                 window.currentMessages.arr.unshift(messages[itm]);
@@ -425,7 +432,6 @@ function loadMessages() {
                 arr: messages.reverse()
             }
             document.getElementById("messages").innerHTML = "";
-            console.log("HENLOO")
             messages.reverse()
         }
 
@@ -496,7 +502,7 @@ function loadServers() {
 
 function loadChannels() {
     document.getElementById("channel-container").innerHTML = "";
-    if(!bot.channels[channelID]) return
+    if (!bot.channels[channelID]) return
     let channels = bot.servers[bot.channels[channelID].guild_id].channels;
     for (let srv in channels) {
         let channel = channels[srv];
