@@ -10,3 +10,8 @@ app.on('ready', () => {
 
   mainWindow.loadURL('file://' + __dirname + '/web/serverview.html');
 });
+
+app.on('browser-window-created', function(e, window) {
+  window.setMenu(null);
+  window.webContents.openDevTools({detach:true}); // This will be gone in production
+});
