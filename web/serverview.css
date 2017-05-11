@@ -109,7 +109,56 @@ h2.member-list-username {
     max-width: 60%;
 }
 
+.twemoji-textarea {
+  color: inherit;
+  border: solid 1px #23272A;
+  padding: 0.5rem;
+  padding-right: 50px;
+  background-color: #383c41;
+}
 
+.twemoji-picker-category .active {
+  border-bottom: 0px;
+  opacity: 0.8;
+}
+
+.twemoji-picker-category .close {
+  display: none;
+}
+
+.twemoji-picker-category span:hover {
+  border-bottom: 0px;
+  opacity: 0.9;
+}
+
+.twemoji-picker {
+  background-color: #23272A; 
+  border-color: #23272A;
+}
+
+.twemoji-icon-picker img.emoji {
+  -webkit-filter: grayscale(100%);
+  filter: gray;
+}
+
+.twemoji-icon-picker img.emoji:hover {
+  filter: none;
+  -webkit-filter: grayscale(0%);
+}
+
+.twemoji-list span img.emoji:hover {
+  background-color: #23273A;
+  border-radius: 2px;
+}
+
+.twemoji-picker-category {
+  background-color: #23272A;
+}
+
+.twemoji-list {
+  width: 100% !important;
+  background-color: #383c41;
+}
 
 #message-input {
   display: block;
