@@ -16,7 +16,7 @@ $(document).ready(function() {
         $(".username").css("display", "none")
         $(".login-or-signup-btn").text("Log in").attr("id", "login")
         $("#login-banner").text("Sign in")
-        $("#signup").click(login)
+        $("#signup").click(signup)
     })
 })
 
