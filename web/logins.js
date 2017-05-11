@@ -1,7 +1,23 @@
 let APIBase = "" // "http://0.0.0.0:8000"
 
 $(document).ready(function() {
-    document.getElementById("login").onclick = login
+    $("#login").click(login)
+    $("#signup-link").click(function() {
+        $("#signup-text").css("display", "none")
+        $("#login-text").css("display", "inline")
+        $(".username").css("display", "inline")
+        $(".login-or-signup-btn").text("Sign up").attr("id", "signup")
+        $("#login-banner").text("Sign up")
+        $("#login").click(login)
+    })
+    $("#login-link").click(function() {
+        $("#signup-text").css("display", "inline")
+        $("#login-text").css("display", "none")
+        $(".username").css("display", "none")
+        $(".login-or-signup-btn").text("Log in").attr("id", "login")
+        $("#login-banner").text("Sign in")
+        $("#signup").click(login)
+    })
 })
 
 function login() {

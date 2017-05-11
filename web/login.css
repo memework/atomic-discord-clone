@@ -43,7 +43,7 @@ label {
     font-size: 0.9em;
 }
 
-#login {
+button {
     background-color: #7289DA;
     border: none;
     color: white;
@@ -56,8 +56,19 @@ label {
     font-size: 16px;
 }
 
-#login:hover {
+button:hover {
     opacity: 0.9;
+}
+
+a {
+    color: #7289DA;
+    margin: 0 0 !important;
+    width: auto !important;
+}
+
+span.tiny {
+    font-size: 0.75em;
+    color: #99AAB5;
 }
 
 #login-form {

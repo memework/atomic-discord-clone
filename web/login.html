@@ -9,13 +9,17 @@
 
 <body>
     <div id="login-container">
-        <h2 id="login-banner">Sign in</h2>
+        <h2 id="login-banner">Sign in</h2> <!-- We dynamically change this depending on signup/login" -->
         <div id="login-form">
+            <label style="display: none;" class="username">Username</label>
+            <input type="text" id="username" class="username" style="display: none;"> <!-- We dynamically show/hide this and the label depending on whether it's signup or not -->
             <label>Email</label>
             <input type="email" id="email"><br>
             <label>Password</label>
             <input type="password" id="password"><br>
-            <button id="login">Sign In</button><br>
+            <button class="login-or-signup-btn" id="login">Sign In</button><br> <!-- We dynamically change this to have the signup ID and text -->
+            <span id="signup-text" class="tiny">Don't have an account? <a id="signup-link" href="#signup">Sign up!</a></span> <!-- Same here -->
+            <span id="login-text" class="tiny" style="display: none;">Already have an account? <a id="login-link" href="#">Log in!</a></span> <!-- Same here -->
         </div>
     </div>
 </body>
