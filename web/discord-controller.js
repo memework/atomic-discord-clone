@@ -1,20 +1,17 @@
 const IsNode = typeof process == "undefined" ? false : true
 let notifier
 let shell
-let shortcodes = {}
 if (IsNode) {
-    // const Discord = require("discord.io");
     notifier = require('node-notifier');
     shell = require('electron').shell
-    shortcodes = require("./emojis2.json")
 }
 if(!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
-// let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
-// $.get("emojis.json", function(data) {
-//     shortcodes = data
-// })
+let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
+$.get("emojis2.json", function(data) {
+    shortcodes = data
+})
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
