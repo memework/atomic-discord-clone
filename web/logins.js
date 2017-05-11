@@ -16,6 +16,7 @@ $(document).ready(function() {
         $(".login-or-signup-btn").text("Log in").attr("id", "login").click(login)
         $("#login-banner").text("Sign in")
     })
+    if(window.localStorage.getItem("token")) $("#already-logged-in-banner").css("display", "inline")
 })
 
 function login() {

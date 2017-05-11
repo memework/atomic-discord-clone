@@ -43,6 +43,19 @@ label {
     font-size: 0.9em;
 }
 
+#already-logged-in-banner {
+    width: 85%;
+    padding: 10px 10px;
+    margin: 0 7.5%;
+    background-color: rgb(236, 152, 44);
+    border-radius: 5px;
+}
+
+#already-logged-in-banner * {
+    width: auto !important;
+    margin: auto !important;
+}
+
 button {
     background-color: #7289DA;
     border: none;
