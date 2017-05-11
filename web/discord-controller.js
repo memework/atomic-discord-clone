@@ -22,7 +22,6 @@ let bot = new Discord.Client({
 });
 
 bot.on("message", function (user, userID, channelID, message, event) {
-    console.log(message, "NEW MSG")
     addMessageToDOM({
         user,
         userID,
@@ -344,7 +343,6 @@ $(document).ready(function () {
     $(".twemoji-textarea").on("keydown", function (e) {
         if (!e) e = window.event;
         var keyCode = e.keyCode || e.which;
-        console.log("Keypress!", keyCode, e.shiftKey, e, keyCode == '13' && !e.shiftKey)
         if (keyCode == '13' && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
             if (messageInput.value.split(" ")[0] == "/join") {
                 ChannelChange(messageInput.value.split(" ")[1]);
