@@ -226,10 +226,10 @@ bot.on("disconnect", (err) => {
     setInterval(() => {
         disconnectsInTimeout -= 1
     }, 60 * 1000)
-    if (disconnectsInTimeout > 10) {
+    if (disconnectsInTimeout > 3) {
         if (IsNode) notifier.notify({
             title: "Unable to connect to Discord!",
-            message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 10 times in the last minute!"
+            message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last minute!"
         })
         return
     }
