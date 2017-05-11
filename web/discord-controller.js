@@ -6,6 +6,7 @@ if (IsNode) {
     notifier = require('node-notifier');
     shell = require('electron').shell
 }
+if(!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
 let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
