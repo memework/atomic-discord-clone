@@ -5,11 +5,11 @@ if (IsNode) {
     notifier = require('node-notifier');
     shell = require('electron').shell
 }
-if(!window.localStorage.getItem("token")) window.location.href = "login.html"
+if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
 let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
-$.get("emojis2.json", function(data) {
+$.get("emojis2.json", function (data) {
     shortcodes = data
 })
 
@@ -50,8 +50,8 @@ bot.on("message", function (user, userID, channelID, message, event) {
 })
 
 function addMessageToDOM(messageInfo, complete) {
-    let { user, userID, channelID, messageID, serverID, message, event, timestamp } = messageInfo
-    message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
+    let { user, userID, channelID, messageID, serverID, message, event, timestamp, attachments } = messageInfo
+    message = bot.fixMessage(message).replace(/\n/g, "<br>") // Just to make it a bit more readable while we have no mentions set up
     let channel = bot.channels[channelID];
     let serverName = bot.servers[serverID] ? bot.servers[serverID].name : "";
     if (window.channelID != channelID) return;
@@ -100,7 +100,7 @@ function addMessageToDOM(messageInfo, complete) {
             let link = args[itm];
             let anode = document.createElement("a");
             anode.onclick = () => {
-                if(IsNode) shell.openExternal(link)
+                if (IsNode) shell.openExternal(link)
                 else window.open(link, '_blank').focus()
             }
             anode.href = "#";
@@ -126,6 +126,15 @@ function addMessageToDOM(messageInfo, complete) {
         } else {
             content.innerHTML += " " + twemoji.parse(args[itm]);
         }
+    }
+
+    for (let att in event.d.attachments) {
+        let imgnode = document.createElement("img");
+        imgnode.onload = () => {
+            imgnode.style.background = "none"
+        }
+        imgnode.src = event.d.attachments[att].proxy_url
+        images.appendChild(imgnode);
     }
 
     let deletebtn = document.createElement("div")
@@ -163,7 +172,7 @@ bot.on("messageUpdate", (oldmsg, newmsg) => {
     if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
     let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
-    if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
+    // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
 
     addMessageToDOM({
         user: oldmsg.author.username,
@@ -192,7 +201,7 @@ bot.on("messageDelete", evnt => {
 })
 
 bot.on("ready", function () {
-    if(IsNode) {
+    if (IsNode) {
         notifier.notify({
             title: "Connected to Discord!",
             message: "Successfully connected to Discord!"
@@ -215,7 +224,7 @@ let disconnectsInTimeout = 0
 
 bot.on("disconnect", (err) => {
     let theTime = new Date().getTime()
-    if(IsNode) {
+    if (IsNode) {
         notifier.notify({
             title: "Disconnected to Discord!",
             message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
@@ -350,7 +359,7 @@ $(document).ready(function () {
             }
             bot.sendMessage({
                 to: window.channelID,
-                message: $("#message-input").text()
+                message: $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "")
             });
             $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("");
         }
