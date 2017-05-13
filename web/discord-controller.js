@@ -383,6 +383,13 @@ let loadingLines = {
         "Freaky",
         "Buggy",
         "Bannable",
+        "Spoopy",
+        "Annoying",
+        "Atomic",
+        "Little",
+        "Large",
+        "Tiny",
+        "Small",
         ""
     ],
     nouns: [
