@@ -364,6 +364,18 @@ let loadingLines = {
         "Bleach",
         "Ag",
         "Discard",
+        "Insert",
+        "Search",
+        "Warm",
+        "Calibrat",
+        "Pag",
+        "Excavat",
+        "Evacuat",
+        "Count",
+        "Test",
+        "Launch",
+        "Burn",
+        ""
     ],
     adjectives: [
         "New",
@@ -391,6 +403,9 @@ let loadingLines = {
         "Tiny",
         "Small",
         "Cheesy",
+        "Backwards",
+        "Inifnite",
+        "The",
         ""
     ],
     nouns: [
@@ -400,6 +415,7 @@ let loadingLines = {
         "Noun",
         "Syringe",
         "Spline",
+        "Ozone",
         "Meme",
         "User",
         "Guild",
@@ -407,6 +423,7 @@ let loadingLines = {
         "Pineapple",
         "Cannon",
         "Sweatshirt",
+        "File",
         "Chrome Installation",
         "Adobe Flash Player",
         "Java Version",
@@ -415,6 +432,7 @@ let loadingLines = {
         "Change",
         "Admin",
         "B1nzy",
+        "Missile",
         "Generic",
         "Heatingdevice",
         "Cheese wedge",
@@ -424,6 +442,10 @@ let loadingLines = {
         "Soon™ Replie",
         "Train",
         "Noot",
+        "Flux Capacitor",
+        "Quarter",
+        "Evidence",
+        "B1nzy Ping",
         ""
     ],
 }
@@ -582,7 +604,7 @@ function loadMessages(hideLoaderAfter) {
                 document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0]);
             })
         }
-        if(hideLoaderAfter) $("#loading-landing").css("display", "none")
+        if (hideLoaderAfter) $("#loading-landing").css("display", "none")
         if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight;
         else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     });
