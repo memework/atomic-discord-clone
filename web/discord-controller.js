@@ -356,7 +356,14 @@ let loadingLines = {
         "Leav",
         "Verb",
         "Reticulat",
-        "Bann"
+        "Bann",
+        "Exploit",
+        "Resurrect",
+        "Reviv",
+        "Amputat",
+        "Bleach",
+        "Ag",
+        "Discard"
     ],
     adjectives: [
         "New",
@@ -367,9 +374,16 @@ let loadingLines = {
         "Sentient",
         "Intelligent",
         "Weird",
-        "",
+        "Unsaved",
         "Dumb",
-        "Dead"
+        "Dead",
+        "Useless",
+        "Unconscious",
+        "Underused",
+        "Freaky",
+        "Buggy",
+        "Bannable",
+        ""
     ],
     nouns: [
         "Hammer",
@@ -382,6 +396,19 @@ let loadingLines = {
         "User",
         "Guild",
         "Pixel",
+        "Pineapple",
+        "Cannon",
+        "Sweatshirt",
+        "Chrome Installation",
+        "Adobe Flash Player",
+        "Java Version",
+        "Loading Line",
+        "Bananna Peel",
+        "Change",
+        "Admin",
+        "B1nzy",
+        "Generic",
+        "Heatingdevice",
         ""
     ],
 }
