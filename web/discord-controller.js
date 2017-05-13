@@ -216,13 +216,18 @@ bot.on("ready", function () {
     ChannelChange(window.channelID, true);
     console.log("Ready");
     loadServers();
-    loadMessages();
+    loadMessages(true);
     loadChannels();
 });
 
 let disconnectsInTimeout = 0
 
 bot.on("disconnect", (err) => {
+    let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
+    let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
+    let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
+    $("#loading-line").text(`${verb}ing ${adjective} ${noun}s`)
+    $("#loading-landing").css("display", "block")
     let theTime = new Date().getTime()
     if (IsNode) {
         notifier.notify({
@@ -337,7 +342,55 @@ bot.on("message", function (user, userID, channelID, message, event) {
 });
 */
 
+let loadingLines = {
+    verbs: [
+        "Load",
+        "Enabl",
+        "Download",
+        "Upload",
+        "Generat",
+        "Disabl",
+        "Delet",
+        "Nuk",
+        "Initializ",
+        "Leav",
+        "Verb",
+        "Reticulat",
+        "Bann"
+    ],
+    adjectives: [
+        "New",
+        "Old",
+        "Gray",
+        "Yellow",
+        "Fancy",
+        "Sentient",
+        "Intelligent",
+        "Weird",
+        "",
+        "Dumb",
+        "Dead"
+    ],
+    nouns: [
+        "Hammer",
+        "Button",
+        "Chisel",
+        "Noun",
+        "Syringe",
+        "Spline",
+        "Meme",
+        "User",
+        "Guild",
+        "Pixel",
+        ""
+    ],
+}
+
 $(document).ready(function () {
+    let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
+    let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
+    let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
+    $("#loading-line").text(`${verb}ing ${adjective} ${noun}s`)
     $("#message-input").twemojiPicker({
         height: "2.5rem",
         width: "calc(100% - 254px - 1rem - 150px)",
@@ -428,7 +481,7 @@ function loadMembers(i) {
 
 let emojiexp = /<:\S*:[0-9]{18}>/gi;
 
-function loadMessages() {
+function loadMessages(hideLoaderAfter) {
     let options = {
         channelID: window.channelID,
         limit: 100,
@@ -487,6 +540,7 @@ function loadMessages() {
                 document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0]);
             })
         }
+        if(hideLoaderAfter) $("#loading-landing").css("display", "none")
         if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight;
         else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     });
