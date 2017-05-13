@@ -1,11 +1,27 @@
 const IsNode = typeof process == "undefined" ? false : true
 let notifier
 let shell
+let microphone
+let Speaker
+let ipcRenderer
+let token = window.localStorage.getItem("token")
 if (IsNode) {
     notifier = require('node-notifier');
     shell = require('electron').shell
+    ipcRenderer = require("electron").ipcRenderer
+    ipcRenderer.on("err", function(err, args) {
+        alert("Error: " + err)
+    })
+    ipcRenderer.send("token", token)
 }
-if (!window.localStorage.getItem("token")) window.location.href = "login.html"
+
+function voiceChannel(channelID) {
+    if(!IsNode) return "err"
+    ipcRenderer.send("voice-channel", channelID)
+    console.log("henlo")
+}
+
+if (!token) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
 let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
@@ -17,9 +33,17 @@ $.get("emojis2.json", function (data) {
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
 let bot = new Discord.Client({
-    token: window.localStorage.getItem("token"),
-    autorun: true
+    token: token,
+    autorun: false
 });
+
+if(IsNode) ipcRenderer.on("voice-ready", () => {
+    console.log("connecting...")
+    bot.connect()
+})
+else bot.connect()
+
+console.log(bot)
 
 bot.on("message", function (user, userID, channelID, message, event) {
     addMessageToDOM({
