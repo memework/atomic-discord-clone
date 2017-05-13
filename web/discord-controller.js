@@ -363,7 +363,7 @@ let loadingLines = {
         "Amputat",
         "Bleach",
         "Ag",
-        "Discard"
+        "Discard",
     ],
     adjectives: [
         "New",
@@ -390,6 +390,7 @@ let loadingLines = {
         "Large",
         "Tiny",
         "Small",
+        "Cheesy",
         ""
     ],
     nouns: [
@@ -416,6 +417,13 @@ let loadingLines = {
         "B1nzy",
         "Generic",
         "Heatingdevice",
+        "Cheese wedge",
+        "Joke",
+        "Pun",
+        "Egg",
+        "Soon™ Replie",
+        "Train",
+        "Noot",
         ""
     ],
 }
