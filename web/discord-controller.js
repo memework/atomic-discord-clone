@@ -439,7 +439,7 @@ let loadingLines = {
         "Joke",
         "Pun",
         "Egg",
-        "Soon™ Replie",
+        "SoonTM Replie",
         "Train",
         "Noot",
         "Flux Capacitor",
