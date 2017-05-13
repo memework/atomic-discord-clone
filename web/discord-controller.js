@@ -495,8 +495,8 @@ function loadMessages() {
 function loadServers() {
     document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
     let servers = bot.servers
-    for (let srv in servers) {
-        let server = servers[srv];
+    for (let srv in bot.internals.settings.guild_positions) {
+        let server = servers[bot.internals.settings.guild_positions[srv]];
         let servericon = `${cdn}/icons/${server.id}/${server.icon}.webp?size=256`;
         if (!server.icon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
         let servernode = document.createElement("a");
