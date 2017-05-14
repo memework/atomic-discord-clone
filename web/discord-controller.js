@@ -223,6 +223,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     let disconnectsInTimeout = 0
 
     bot.on("disconnect", (err) => {
+        if(err == "Authentication Failed") return window.location.href = "login.html"
         let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
         let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
         let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
