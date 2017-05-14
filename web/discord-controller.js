@@ -462,7 +462,7 @@ $(document).ready(function () {
   document.getElementById("avatar-upload").onchange = function(ev) {
     let fr = new FileReader()
     fr.onload = function(result) {
-      let base64 = this.result
+      let base64 = this.result.replace(/data:.*,/, "")
       bot.editUserInfo({
         avatar: base64
       }, function(err, resp) {
