@@ -1,6 +1,23 @@
 * {
   box-sizing: border-box;
   font-family: 'Arimo', sans-serif;
+  -moz-user-select: -moz-none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.selectable {
+  -moz-user-select: -moz-auto;
+  -moz-user-select: auto;
+  -o-user-select: auto;
+  -khtml-user-select: auto;
+  -webkit-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
 }
 
 html, body {

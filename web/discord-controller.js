@@ -11,7 +11,7 @@ const cdn = "https://cdn.discordapp.com";
 const messages = document.getElementById("messages")
 let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (data) {
-    shortcodes = data
+    shortcodes = JSON.parse(data)
 })
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
@@ -139,115 +139,115 @@ function addMessageToDOM(messageInfo, complete) {
 
 function BotListeners() { // This is not indented on purpose as it's most of the code...
 
-bot.on("message", function (user, userID, channelID, message, event) {
-    addMessageToDOM({
-        user,
-        userID,
-        channelID,
-        serverID: bot.channels[channelID] ? bot.channels[channelID].guild_id : channelID,
-        messageID: event.d.id,
-        message,
-        event,
-        timestamp: event.d.timestamp
-    }, function (nodes) {
-        let { avatar, content, images, msgobj, container, deletebtn } = nodes
+    bot.on("message", function (user, userID, channelID, message, event) {
+        addMessageToDOM({
+            user,
+            userID,
+            channelID,
+            serverID: bot.channels[channelID] ? bot.channels[channelID].guild_id : channelID,
+            messageID: event.d.id,
+            message,
+            event,
+            timestamp: event.d.timestamp
+        }, function (nodes) {
+            let { avatar, content, images, msgobj, container, deletebtn } = nodes
 
-        container.appendChild(avatar);
-        msgobj.appendChild(content);
-        msgobj.appendChild(images);
-        container.id = "msg-" + event.d.id;
-        container.classList = "message";
-        msgobj.classList = "message-inner";
-        container.appendChild(msgobj)
-        container.appendChild(deletebtn)
-        document.getElementById("messages").appendChild(container);
-        // messages.appendChild(document.createElement("br"));
+            container.appendChild(avatar);
+            msgobj.appendChild(content);
+            msgobj.appendChild(images);
+            container.id = "msg-" + event.d.id;
+            container.classList = "message";
+            msgobj.classList = "message-inner";
+            container.appendChild(msgobj)
+            container.appendChild(deletebtn)
+            document.getElementById("messages").appendChild(container);
+            // messages.appendChild(document.createElement("br"));
 
-        document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10; // Scroll to bottom of page
-    })
-})
-
-bot.on("messageUpdate", (oldmsg, newmsg) => {
-    if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
-    let message = newmsg.content
-    let container = document.getElementById("msg-" + oldmsg.id)
-    // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
-
-    addMessageToDOM({
-        user: oldmsg.author.username,
-        userID: oldmsg.author.id,
-        channelID,
-        serverID: bot.channels[channelID].guild_id,
-        messageID: oldmsg.id,
-        message,
-        event: {
-            d: {
-                author: oldmsg.author
-            }
-        },
-        timestamp: oldmsg.timestamp
-    }, function (items) {
-        let { content, images } = items
-        container.getElementsByTagName("div")[0].replaceChild(content, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.content`)[0])
-        container.getElementsByTagName("div")[0].replaceChild(images, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`)[0])
-    })
-})
-
-bot.on("messageDelete", evnt => {
-    let { channel_id, id } = evnt.d
-    if (channel_id != window.channelID) return console.log("Skipping nonexistent message deletion...")
-    document.getElementById("msg-" + id).remove()
-})
-
-bot.on("ready", function () {
-    if (IsNode) {
-        notifier.notify({
-            title: "Connected to Discord!",
-            message: "Successfully connected to Discord!"
-        });
-    }
-    window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
-
-    window.currentMessages = {
-        channelID: window.channelID,
-        arr: []
-    }
-    ChannelChange(window.channelID, true);
-    console.log("Ready");
-    loadServers();
-    loadMessages(true);
-    loadChannels();
-});
-
-let disconnectsInTimeout = 0
-
-bot.on("disconnect", (err) => {
-    let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
-    let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
-    let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
-    $("#loading-line").text(`${verb}ing ${adjective} ${noun}s`)
-    $("#loading-landing").css("display", "block")
-    let theTime = new Date().getTime()
-    if (IsNode) {
-        notifier.notify({
-            title: "Disconnected to Discord!",
-            message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
-        });
-    }
-    disconnectsInTimeout += 1
-    setInterval(() => {
-        disconnectsInTimeout -= 1
-    }, 60 * 1000)
-    if (disconnectsInTimeout > 3) {
-        if (IsNode) notifier.notify({
-            title: "Unable to connect to Discord!",
-            message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last minute!"
+            document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10; // Scroll to bottom of page
         })
-        return
-    }
-    bot.connect()
-    console.log("Error: " + err)
-})
+    })
+
+    bot.on("messageUpdate", (oldmsg, newmsg) => {
+        if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
+        let message = newmsg.content
+        let container = document.getElementById("msg-" + oldmsg.id)
+        // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
+
+        addMessageToDOM({
+            user: oldmsg.author.username,
+            userID: oldmsg.author.id,
+            channelID,
+            serverID: bot.channels[channelID].guild_id,
+            messageID: oldmsg.id,
+            message,
+            event: {
+                d: {
+                    author: oldmsg.author
+                }
+            },
+            timestamp: oldmsg.timestamp
+        }, function (items) {
+            let { content, images } = items
+            container.getElementsByTagName("div")[0].replaceChild(content, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.content`)[0])
+            container.getElementsByTagName("div")[0].replaceChild(images, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`)[0])
+        })
+    })
+
+    bot.on("messageDelete", evnt => {
+        let { channel_id, id } = evnt.d
+        if (channel_id != window.channelID) return console.log("Skipping nonexistent message deletion...")
+        document.getElementById("msg-" + id).remove()
+    })
+
+    bot.on("ready", function () {
+        if (IsNode) {
+            notifier.notify({
+                title: "Connected to Discord!",
+                message: "Successfully connected to Discord!"
+            });
+        }
+        window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
+
+        window.currentMessages = {
+            channelID: window.channelID,
+            arr: []
+        }
+        ChannelChange(window.channelID, true);
+        console.log("Ready");
+        loadServers();
+        loadChannels();
+        loadMessages(true);
+    });
+
+    let disconnectsInTimeout = 0
+
+    bot.on("disconnect", (err) => {
+        let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
+        let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
+        let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
+        $("#loading-line").text(`${verb}ing ${adjective} ${noun}s`)
+        $("#loading-landing").css("display", "block")
+        let theTime = new Date().getTime()
+        if (IsNode) {
+            notifier.notify({
+                title: "Disconnected to Discord!",
+                message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
+            });
+        }
+        disconnectsInTimeout += 1
+        setInterval(() => {
+            disconnectsInTimeout -= 1
+        }, 60 * 1000)
+        if (disconnectsInTimeout > 3) {
+            if (IsNode) notifier.notify({
+                title: "Unable to connect to Discord!",
+                message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last minute!"
+            })
+            return
+        }
+        bot.connect()
+        console.log("Error: " + err)
+    })
 }
 
 // Old message code before we had new message handler
@@ -458,6 +458,20 @@ $(document).ready(function () {
         autorun: true
     });
     BotListeners()
+    // document.getElementById("file-upload").onchange = function(ev) {
+    //     let fr = new FileReader()
+    //     fr.loadend = function(result) {
+    //         bot.uploadFile({
+    //             to: window.channelID,
+    //             file: result,
+    //             filename: "henlo.png"
+    //         }, function(err, resp) {
+    //             if(err) console.log(err, resp)
+    //             console.log(resp)
+    //         })
+    //     }
+    //     fr.readAsArrayBuffer(ev.target.files[0])
+    // }
     let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
     let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
     let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
@@ -473,6 +487,11 @@ $(document).ready(function () {
     })
     let messageInput = document.getElementById('message-input');
     // $("#message-input").emojioneArea();
+    document.querySelector('div[contenteditable="true"]').addEventListener("paste", function (e) {
+        e.preventDefault();
+        var text = e.clipboardData.getData("text/plain");
+        document.execCommand("insertHTML", false, text);
+    });
     $(".twemoji-textarea").on("keydown", function (e) {
         if (!e) e = window.event;
         var keyCode = e.keyCode || e.which;
@@ -481,9 +500,12 @@ $(document).ready(function () {
                 ChannelChange(messageInput.value.split(" ")[1]);
                 return;
             }
+            let temp = document.createElement("div")
+            temp.innerHTML = $("#message-input").text()
+            // $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
             bot.sendMessage({
                 to: window.channelID,
-                message: $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "")
+                message: temp.innerText
             });
             $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("");
         }
@@ -552,7 +574,7 @@ function loadMembers(i) {
 
 let emojiexp = /<:\S*:[0-9]{18}>/gi;
 
-function loadMessages(hideLoaderAfter) {
+function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
     let options = {
         channelID: window.channelID,
         limit: 100,
@@ -576,10 +598,12 @@ function loadMessages(hideLoaderAfter) {
             messages.reverse()
         }
 
-        for (let itm in messages) {
-            let curmsg = messages[itm];
+        let len = messages.length
 
-            if (!curmsg || !curmsg.author) continue;
+        messages.forEach(function (curmsg, i) {
+            // let curmsg = messages[itm];
+
+            if (!curmsg || !curmsg.author) return;
             let message = curmsg.content;
             let user = curmsg.author.username;
             let userID = curmsg.author.id;
@@ -610,10 +634,13 @@ function loadMessages(hideLoaderAfter) {
                 container.appendChild(deletebtn);
                 document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0]);
             })
-        }
-        if (hideLoaderAfter) $("#loading-landing").css("display", "none")
-        if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight;
-        else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+            console.log("Adding message")
+            if (i + 1 >= len) {
+                if (hideLoaderAfter) $("#loading-landing").css("display", "none")
+                if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight;
+                else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+            }
+        })
     });
 }
 
@@ -621,8 +648,10 @@ function loadServers() {
     document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
     for (let srv in bot.internals.settings.guild_positions) {
         let server = bot.servers[bot.internals.settings.guild_positions[srv]];
+        if (!server) continue
         let servericon = `${cdn}/icons/${server.id}/${server.icon}.webp?size=256`;
         if (!server.icon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
+        if (server.unavailable) servericon = "unavailable.png"
         let servernode = document.createElement("a");
         servernode.href = "#";
         servernode.classList = "server-icon";
@@ -644,7 +673,14 @@ function loadServers() {
 function loadChannels() {
     document.getElementById("channel-container").innerHTML = "";
     if (!bot.channels[channelID]) return
-    let channels = bot.servers[bot.channels[channelID].guild_id].channels;
+    let channelsob = bot.servers[bot.channels[channelID].guild_id].channels;
+    let channels = []
+    for (let i in channelsob) {
+        channels.push(channelsob[i])
+    }
+    channels = channels.sort(function (a, b) {
+        return a.position - b.position
+    })
     for (let srv in channels) {
         let channel = channels[srv];
         if (channel.type != "text") continue; // We don't do voice channels atm... OR VIDEO CHANNELS DISCORD VIDEO SUPPORT COMING SOON™ CONFIRMED!!!1!!!!!
