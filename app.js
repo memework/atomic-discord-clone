@@ -8,7 +8,7 @@ app.on('ready', () => {
       width: 1000
   });
 
-  mainWindow.loadURL('file://' + __dirname + '/web/serverview.html');
+  mainWindow.loadURL('file://' + __dirname + '/web/login.html');
 });
 
 app.on('browser-window-created', function(e, window) {
