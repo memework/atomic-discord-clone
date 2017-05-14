@@ -1,6 +1,7 @@
 const IsNode = typeof process == "undefined" ? false : true
 let notifier
 let shell
+let bot
 if (IsNode) {
     notifier = require('node-notifier');
     shell = require('electron').shell
@@ -16,39 +17,8 @@ $.get("emojis2.json", function (data) {
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
-let bot = new Discord.Client({
-    token: window.localStorage.getItem("token"),
-    autorun: true
-});
-
-bot.on("message", function (user, userID, channelID, message, event) {
-    addMessageToDOM({
-        user,
-        userID,
-        channelID,
-        serverID: bot.channels[channelID] ? bot.channels[channelID].guild_id : channelID,
-        messageID: event.d.id,
-        message,
-        event,
-        timestamp: event.d.timestamp
-    }, function (nodes) {
-        let { avatar, content, images, msgobj, container, deletebtn } = nodes
-
-        container.appendChild(avatar);
-        msgobj.appendChild(content);
-        msgobj.appendChild(images);
-        container.id = "msg-" + event.d.id;
-        container.classList = "message";
-        msgobj.classList = "message-inner";
-        container.appendChild(msgobj)
-        container.appendChild(deletebtn)
-        document.getElementById("messages").appendChild(container);
-        // messages.appendChild(document.createElement("br"));
-
-        document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10; // Scroll to bottom of page
-    })
-})
-
+const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi;
+const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi;
 function addMessageToDOM(messageInfo, complete) {
     let { user, userID, channelID, messageID, serverID, message, event, timestamp, attachments } = messageInfo
     message = bot.fixMessage(message).replace(/\n/g, "<br>") // Just to make it a bit more readable while we have no mentions set up
@@ -167,6 +137,35 @@ function addMessageToDOM(messageInfo, complete) {
     }
 }
 
+function BotListeners() { // This is not indented on purpose as it's most of the code...
+
+bot.on("message", function (user, userID, channelID, message, event) {
+    addMessageToDOM({
+        user,
+        userID,
+        channelID,
+        serverID: bot.channels[channelID] ? bot.channels[channelID].guild_id : channelID,
+        messageID: event.d.id,
+        message,
+        event,
+        timestamp: event.d.timestamp
+    }, function (nodes) {
+        let { avatar, content, images, msgobj, container, deletebtn } = nodes
+
+        container.appendChild(avatar);
+        msgobj.appendChild(content);
+        msgobj.appendChild(images);
+        container.id = "msg-" + event.d.id;
+        container.classList = "message";
+        msgobj.classList = "message-inner";
+        container.appendChild(msgobj)
+        container.appendChild(deletebtn)
+        document.getElementById("messages").appendChild(container);
+        // messages.appendChild(document.createElement("br"));
+
+        document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10; // Scroll to bottom of page
+    })
+})
 
 bot.on("messageUpdate", (oldmsg, newmsg) => {
     if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
@@ -249,9 +248,7 @@ bot.on("disconnect", (err) => {
     bot.connect()
     console.log("Error: " + err)
 })
-
-const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi;
-const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi;
+}
 
 // Old message code before we had new message handler
 /*
@@ -446,11 +443,21 @@ let loadingLines = {
         "Quarter",
         "Evidence",
         "B1nzy Ping",
+        "Map",
+        "Database",
+        "Datacenter",
+        "Server",
+        "Token",
         ""
     ],
 }
 
 $(document).ready(function () {
+    bot = new Discord.Client({
+        token: window.localStorage.getItem("token"),
+        autorun: true
+    });
+    BotListeners()
     let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
     let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
     let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
@@ -612,9 +619,8 @@ function loadMessages(hideLoaderAfter) {
 
 function loadServers() {
     document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
-    let servers = bot.servers
     for (let srv in bot.internals.settings.guild_positions) {
-        let server = servers[bot.internals.settings.guild_positions[srv]];
+        let server = bot.servers[bot.internals.settings.guild_positions[srv]];
         let servericon = `${cdn}/icons/${server.id}/${server.icon}.webp?size=256`;
         if (!server.icon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
         let servernode = document.createElement("a");
