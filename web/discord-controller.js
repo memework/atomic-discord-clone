@@ -20,11 +20,11 @@ $.get("emojis2.json", function (result) {
 
 $.get(endpoint + "/version", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
-  litecordRevision = result.version.substring(0,7)
+  litecordRevision = result.version.substring(0, 7)
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
 })
 
-$.get("version.txt", function(result) {
+$.get("version.txt", function (result) {
   atomicRevision = result
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
 })
@@ -48,7 +48,7 @@ function addMessageToDOM(messageInfo, complete) {
   let container = document.createElement("div")
   let msgobj = document.createElement("div")
   let title = document.createElement("h2")
-  title.appendChild(document.createTextNode(user))
+  title.innerText = user + (bot.users[userID].bot ? " [BOT]" : "")
   title.classList = "username"
   msgobj.appendChild(title)
 
@@ -244,8 +244,8 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     console.log("Ready")
     loadChannels()
     loadMembers()
-    setTimeout(function() {
-      loadServers();
+    setTimeout(function () {
+      loadServers()
       loadMessages(true)
     }, 1000)
   })
@@ -458,12 +458,18 @@ let loadingLines = {
 }
 
 $(document).ready(function () {
+  $(document).on("keypress", function (e) {
+    var tag = e.target.tagName.toLowerCase()
+    if (tag != "input" && tag != "textarea" && tag != "select") {
+      $(".twemoji-textarea").focus()
+    }
+  })
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
   bot = new Discord.Client({
     token: window.localStorage.getItem("token"),
     autorun: true
   })
-  
+
   BotListeners()
   document.getElementById("file-upload").onchange = function (ev) {
     let fr = new FileReader()
@@ -660,7 +666,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
 function loadServers() {
   document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
-  bot.internals.settings.guild_positions.forEach(function(srv) {
+  bot.internals.settings.guild_positions.forEach(function (srv) {
     let server = bot.servers[srv]
     if (!server) {
       console.log("Skipping " + server)
