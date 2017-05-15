@@ -3,12 +3,10 @@ let notifier
 let shell
 let bot
 let atomicRevision = "N/A"
+let litecordRevision = "N/A"
 if (IsNode) {
   notifier = require("node-notifier")
   shell = require("electron").shell
-  atomicRevision = require("child_process")
-    .execSync("git rev-parse --short HEAD")
-    .toString().trim()
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
 }
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
@@ -22,8 +20,13 @@ $.get("emojis2.json", function (result) {
 
 $.get(endpoint + "/version", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
-  $(".git-revision").text("A:" + atomicRevision + " - L:" + result.version.substring(0,7))
-  console.log("FIN")
+  litecordRevision = result.version.substring(0,7)
+  $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
+})
+
+$.get("version.txt", function(result) {
+  atomicRevision = result
+  $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
 })
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
@@ -452,10 +455,12 @@ let loadingLines = {
 }
 
 $(document).ready(function () {
+  $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
   bot = new Discord.Client({
     token: window.localStorage.getItem("token"),
     autorun: true
   })
+  
   BotListeners()
   document.getElementById("file-upload").onchange = function (ev) {
     console.log("HENLO")
