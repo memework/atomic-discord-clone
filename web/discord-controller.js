@@ -51,8 +51,8 @@ function addMessageToDOM(messageInfo, complete) {
   title.innerText = user + (bot.users[userID].bot ? " [BOT]" : "")
   title.classList = "username"
   msgobj.appendChild(title)
-
-  let avatarurl = `${cdn}/avatars/${userID}/${event.d.author.avatar}.webp?size=64`
+  let avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
+  if(event.d.author.avatar) avatarurl = `${cdn}/avatars/${userID}/${event.d.author.avatar}.webp?size=64`
   let avatar = document.createElement("img")
   avatar.src = avatarurl
   avatar.classList = "avatar"
