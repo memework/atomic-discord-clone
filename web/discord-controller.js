@@ -2,16 +2,28 @@ const IsNode = typeof process == "undefined" ? false : true
 let notifier
 let shell
 let bot
+let atomicRevision = "N/A"
 if (IsNode) {
   notifier = require("node-notifier")
   shell = require("electron").shell
+  atomicRevision = require("child_process")
+    .execSync("git rev-parse --short HEAD")
+    .toString().trim()
+  $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
 }
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com"
+const endpoint = "http://litecord.memework.org/api"
 let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
-  if (typeof result != Object) result = JSON.parse(result)
+  if (typeof result != "object") result = JSON.parse(result)
   shortcodes = result
+})
+
+$.get(endpoint + "/version", function (result) {
+  if (typeof result != "object") result = JSON.parse(result)
+  $(".git-revision").text("A:" + atomicRevision + " - L:" + result.version.substring(0,7))
+  console.log("FIN")
 })
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
@@ -483,7 +495,7 @@ $(document).ready(function () {
   })
   $("#message-input").twemojiPicker({
     height: "2.5rem",
-    width: "calc(100% - 254px - 1rem - 150px)",
+    width: "100%",
     pickerPosition: "top",
     pickerHeight: "400px",
     pickerWidth: "45%",
@@ -546,7 +558,7 @@ function ChannelChange(channelID, silent) {
 function loadMembers() {
   let mem = bot.servers[bot.channels[window.channelID].guild_id].members
   let members = []
-  for(let m in mem) {
+  for (let m in mem) {
     members.push(mem[m])
   }
   members.forEach(function (user) {
