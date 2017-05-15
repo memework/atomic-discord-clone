@@ -242,9 +242,12 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     }
     ChannelChange(window.channelID, true)
     console.log("Ready")
-    loadServers()
     loadChannels()
-    loadMessages(true)
+    loadMembers()
+    setTimeout(function() {
+      loadServers();
+      loadMessages(true)
+    }, 1000)
   })
 
   let disconnectsInTimeout = 0
@@ -463,7 +466,6 @@ $(document).ready(function () {
   
   BotListeners()
   document.getElementById("file-upload").onchange = function (ev) {
-    console.log("HENLO")
     let fr = new FileReader()
     fr.onload = function (result) {
       bot.uploadFile({
@@ -518,6 +520,7 @@ $(document).ready(function () {
     if (!e) e = window.event
     var keyCode = e.keyCode || e.which
     if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+      e.preventDefault()
       if (messageInput.value.split(" ")[0] == "/join") {
         ChannelChange(messageInput.value.split(" ")[1])
         return
@@ -657,9 +660,12 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
 function loadServers() {
   document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
-  for (let srv in bot.internals.settings.guild_positions) {
-    let server = bot.servers[bot.internals.settings.guild_positions[srv]]
-    if (!server) continue
+  bot.internals.settings.guild_positions.forEach(function(srv) {
+    let server = bot.servers[srv]
+    if (!server) {
+      console.log("Skipping " + server)
+      return
+    }
     let servericon = `${cdn}/icons/${server.id}/${server.icon}.webp?size=256`
     if (!server.icon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
     if (server.unavailable) servericon = "unavailable.png"
@@ -678,7 +684,7 @@ function loadServers() {
       ChannelChange(server.id, true)
     }
     document.getElementById("server-list").insertBefore(servernode, null)
-  }
+  })
 }
 
 function loadChannels() {
