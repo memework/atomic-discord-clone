@@ -247,7 +247,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     setTimeout(function () {
       loadServers()
       loadMessages(true)
-    }, 1000)
+    }, 2000)
   })
 
   let disconnectsInTimeout = 0
@@ -389,7 +389,7 @@ let loadingLines = {
     "Jokes",
     "Puns",
     "Eggs",
-    "Soon&trade Replies",
+    "Soon&trade; Replies",
     "Trains",
     "Noots",
     "Flux Capacitors",
@@ -434,11 +434,11 @@ let loadingLines = {
     "Horses",
     "Darth Vader",
     "Hot Pockets",
-    "Bill Nye the Science Guy&trade <strike>Dolls</strike> <strong>Action Figures</strong>",
+    "Bill Nye the Science Guy&trade; <strike>Dolls</strike> <strong>Action Figures</strong>",
     "Bieber",
     "Batman",
     "Superman",
-    "NotDiscord&trade",
+    "NotDiscord&trade;",
     "Reddit",
     "Wolfiri",
     "Credit Cards",
