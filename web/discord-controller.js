@@ -620,6 +620,13 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
     let len = messages.length
 
+    if(len <= 0) {
+      if (hideLoaderAfter) $("#loading-landing").css("display", "none")
+      if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight
+      else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight
+      return
+    }
+    
     messages.forEach(function (curmsg, i) {
       // let curmsg = messages[itm]
 
