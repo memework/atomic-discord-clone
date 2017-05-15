@@ -113,16 +113,26 @@ img.emoji {
   background-color: #303338;
 }
 
-#member-list {
+#right-bar {
   position: relative;
   float: right;
   margin-left: 50px;
   height: 100%;
   margin-top: 0px;
-  overflow-y: auto;
+  overflow-y: clip;
   width: 150px;
   margin: 0 0;
   background-color: #303338;
+}
+
+#member-list {
+  height: calc(100% - 50px);
+  margin-top: 0px;
+  overflow-y: auto;
+}
+
+input[type="file"] {
+  height: 25px;
 }
 
 img.member-list-avatar {

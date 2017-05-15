@@ -17,6 +17,7 @@ $.get("emojis2.json", function (result) {
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
+const inviteexp = / /
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
@@ -26,9 +27,9 @@ function addMessageToDOM(messageInfo, complete) {
   let serverName = bot.servers[serverID] ? bot.servers[serverID].name : ""
   if (window.channelID != channelID) return
   document.getElementById("message-input").setAttribute("placeholder", "Message #" + channel.name || "")
-    // ChannelChange(channelID)
+  // ChannelChange(channelID)
   window.channelID = channelID
-    // We got a new message
+  // We got a new message
   let container = document.createElement("div")
   let msgobj = document.createElement("div")
   let title = document.createElement("h2")
@@ -100,7 +101,7 @@ function addMessageToDOM(messageInfo, complete) {
     } else if (emojiexp.test(args[itm])) {
       let colsplit = args[itm].split(":")
       let link = `${cdn}/emojis/${colsplit[colsplit.length - 1].substring(0, colsplit[colsplit.length - 1].length - 1)}.png`
-            // console.log(link)
+      // console.log(link)
       let imgnode = document.createElement("img")
       imgnode.classList = "emoji"
       imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
@@ -126,12 +127,12 @@ function addMessageToDOM(messageInfo, complete) {
       messageID: messageID
     }, (err) => {
       if (err && err != "ResponseError: Error: SyntaxError: Unexpected end of JSON input") return alert("Error while deleting message: " + err)
-            // We don't remove it from the DOM because the messageDelete event is fired
+      // We don't remove it from the DOM because the messageDelete event is fired
     })
   }
   deletebtn.innerHTML = "<i class=\"fa fa-trash-o jumbotxt\" aria-hidden=\"true\"></i>"
 
-    // content.innerHTML = args.join(" ")
+  // content.innerHTML = args.join(" ")
   complete({
     avatar,
     content,
@@ -142,10 +143,10 @@ function addMessageToDOM(messageInfo, complete) {
   })
 
   if (userID != bot.id) {
-        // notifier.notify({
-        //     title: "Message from " + user + ":",
-        //     message
-        // })
+    // notifier.notify({
+    //     title: "Message from " + user + ":",
+    //     message
+    // })
   }
 }
 
@@ -173,7 +174,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
       container.appendChild(msgobj)
       container.appendChild(deletebtn)
       document.getElementById("messages").appendChild(container)
-            // messages.appendChild(document.createElement("br"))
+      // messages.appendChild(document.createElement("br"))
 
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10 // Scroll to bottom of page
     })
@@ -183,7 +184,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
     let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
-        // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
+    // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
 
     addMessageToDOM({
       user: oldmsg.author.username,
@@ -256,7 +257,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
         title: "Unable to connect to Discord!",
         message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last minute!"
       })
-            // return
+      // return
     }
     bot.connect()
     console.log("Error: " + err)
@@ -444,29 +445,29 @@ $(document).ready(function () {
     autorun: true
   })
   BotListeners()
-  document.getElementById("file-upload").onchange = function(ev) {
+  document.getElementById("file-upload").onchange = function (ev) {
     console.log("HENLO")
     let fr = new FileReader()
-    fr.onload = function(result) {
+    fr.onload = function (result) {
       bot.uploadFile({
         to: window.channelID,
         file: new Buffer(this.result),
         filename: ev.target.files[0].name
-      }, function(err, resp) {
-        if(err) console.log(err, resp)
+      }, function (err, resp) {
+        if (err) console.log(err, resp)
         console.log(resp)
       })
     }
     fr.readAsArrayBuffer(ev.target.files[0])
   }
-  document.getElementById("avatar-upload").onchange = function(ev) {
+  document.getElementById("avatar-upload").onchange = function (ev) {
     let fr = new FileReader()
-    fr.onload = function(result) {
+    fr.onload = function (result) {
       let base64 = this.result.replace(/data:.*,/, "")
       bot.editUserInfo({
         avatar: base64
-      }, function(err, resp) {
-        if(err) console.log(err, resp)
+      }, function (err, resp) {
+        if (err) console.log(err, resp)
         console.log(resp)
       })
     }
@@ -490,7 +491,7 @@ $(document).ready(function () {
     size: "35px",
   })
   let messageInput = document.getElementById("message-input")
-    // $("#message-input").emojioneArea()
+  // $("#message-input").emojioneArea()
   document.querySelector("div[contenteditable=\"true\"]").addEventListener("paste", function (e) {
     e.preventDefault()
     var text = e.clipboardData.getData("text/plain")
@@ -506,7 +507,7 @@ $(document).ready(function () {
       }
       let temp = document.createElement("div")
       temp.innerHTML = $("#message-input").text()
-            // $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "").replace(/&lt/gi, "<").replace(/&gt/gi, ">")
+      // $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "").replace(/&lt/gi, "<").replace(/&gt/gi, ">")
       bot.sendMessage({
         to: window.channelID,
         message: temp.innerText
@@ -526,7 +527,7 @@ function ChannelChange(channelID, silent) {
   if (window.channelID == channelID) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
   let channel = bot.channels[channelID]
-    // if (!channel) return console.log("Skipping channel that doesn't exist")
+  // if (!channel) return console.log("Skipping channel that doesn't exist")
   let server = bot.servers[channel.guild_id]
   document.title = `#${channel.name} in ${server.name} - ${channel.topic}`
   if (!silent) {
@@ -542,27 +543,19 @@ function ChannelChange(channelID, silent) {
   loadMembers(0)
 }
 
-function loadMembers(i) {
-  let members = bot.servers[bot.channels[window.channelID].guild_id].members
-  if (i >= Object.keys(members).length) {
-    return console.log("Loaded members")
+function loadMembers() {
+  let mem = bot.servers[bot.channels[window.channelID].guild_id].members
+  let members = []
+  for(let m in mem) {
+    members.push(mem[m])
   }
-  bot.createDMChannel(Object.keys(members)[i], function (err, res) {
-    if (err || !res) {
-      console.log(err ? err : "User no exist")
-      return setTimeout(() => {
-        loadMembers(++i)
-      }, 500)
-    }
-    if (!res.recipient.avatar) {
-      avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
-    } else {
-      avatarurl = `${cdn}/avatars/${Object.keys(members)[i]}/${res.recipient.avatar}.webp?size=256`
-    }
+  members.forEach(function (user) {
+    let avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
+    if (user.avatar) avatarurl = `${cdn}/avatars/${user.id}/${user.avatar}.webp?size=256`
     let container = document.createElement("div")
     let avatar = document.createElement("img")
     let username = document.createElement("h2")
-    username.innerText = res.recipient.username
+    username.innerText = user.username
     avatar.src = avatarurl
     avatar.classList = "member-list-avatar"
     container.classList = "member-list-member"
@@ -570,9 +563,6 @@ function loadMembers(i) {
     container.appendChild(avatar)
     container.appendChild(username)
     document.getElementById("member-list").appendChild(container)
-    setTimeout(() => {
-      loadMembers(++i)
-    }, 500)
   })
 }
 
@@ -587,7 +577,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.getMessages(options, (err, messages) => {
     let oldScrollHeight = document.getElementById("messages").scrollHeight
-        // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse()
+    // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse()
     let scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
       for (let itm in messages) {
@@ -605,7 +595,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
     let len = messages.length
 
     messages.forEach(function (curmsg, i) {
-            // let curmsg = messages[itm]
+      // let curmsg = messages[itm]
 
       if (!curmsg || !curmsg.author) return
       let message = curmsg.content

@@ -1,40 +1,51 @@
 <html>
 
 <head>
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-    <script>if (window.module) module = window.module;</script>
+    <script>
+        if (typeof module === 'object') { window.module = module; module = undefined; }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script>
+        if (window.module) module = window.module;
+    </script>
     <script src="discord.io.js"></script>
     <script src="discord-controller.js"></script>
     <link rel="stylesheet" href="https://rawgit.com/xLs51/Twemoji-Picker/master/css/twemoji-picker.css">
     <link rel="stylesheet" href="serverview.css" />
     <script src="https://rawgit.com/xLs51/Twemoji-Picker/master/js/twemoji-picker.js"></script>
     <script src="http://twemoji.maxcdn.com/2/twemoji.min.js?2.2.3"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+        crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Arimo" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.5.4/jquery.timeago.min.js"></script>
 </head>
 <div id="loading-landing">
     <img src="loading.gif" alt="Loading indicator" id="loading-image">
-    <i id="loading-line">Loading Loading Lines</i> <!-- We kind of copy discord and change this upon every showing ;D This message is super funny -->
+    <i id="loading-line">Loading Loading Lines</i>
+    <!-- We kind of copy discord and change this upon every showing ;D This message is super funny -->
     <div id="connection-problems">Connection Problems? <a href="https://memework.org">Send a message our way!</a></div>
 </div>
+
 <body>
-<div id="server-list">
-    <!--Server icons and stuff go in here-->
-</div>
-<div id="channel-container">
-    <!--Channel buttons go in here-->
-</div>
-<div id="messages" class="messages">
-    <!--Put messages in here-->
-</div>
-<div class="message-input-wrap">
-    <input type="text" id="message-input" data-emojiable="true" class="message-input" />
-</div>
-<input type="file" id="file-upload">
-<input type="file" id="avatar-upload">
-<div id="member-list">
-</div>
+    <div id="server-list">
+        <!--Server icons and stuff go in here-->
+    </div>
+    <div id="channel-container">
+        <!--Channel buttons go in here-->
+    </div>
+    <div id="messages" class="messages">
+        <!--Put messages in here-->
+    </div>
+    <div class="message-input-wrap">
+        <input type="text" id="message-input" data-emojiable="true" class="message-input" />
+    </div>
+    <div id="right-bar">
+        <div id="member-list">
+        </div>
+        <input type="file" id="file-upload" name="Attach Memes">
+        <input type="file" id="avatar-upload" name="Meme Avatar">
+    </div>
 </body>
+
 </html>
