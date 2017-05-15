@@ -118,6 +118,7 @@ img.emoji {
   float: right;
   margin-left: 50px;
   height: 100%;
+  z-index: 1;
   margin-top: 0px;
   overflow-y: clip;
   width: 150px;
@@ -175,10 +176,14 @@ label[for="file-upload"], label[for="avatar-upload"] {
 
 .git-revision {
   font-weight: thin;
-  color: #ddd;
-  z-index: 100;
+  color: #bbb;
   height: 1em;
-  transform: translate(calc(100% - 150px), 0);
+  width: calc(100% - 10px);
+  z-index: 1001;
+  text-align: right;
+  display: block;
+  position: absolute;
+  bottom: 1px;
 }
 
 img.member-list-avatar {
