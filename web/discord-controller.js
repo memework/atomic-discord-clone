@@ -247,7 +247,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     setTimeout(function () {
       loadServers()
       loadMessages(true)
-    }, 4000)
+    }, 1000)
   })
 
   let disconnectsInTimeout = 0
@@ -666,7 +666,8 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
 function loadServers() {
   document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
-  bot.internals.settings.guild_positions.forEach(function (srv) {
+  let srvlist = bot.internals.settings.guild_positions || Object.keys(bot.servers)
+  srvlist.forEach(function (srv) {
     let server = bot.servers[srv]
     if (!server) {
       console.log("Skipping " + server)
