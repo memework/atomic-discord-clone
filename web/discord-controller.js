@@ -48,7 +48,7 @@ function addMessageToDOM(messageInfo, complete) {
   let container = document.createElement("div")
   let msgobj = document.createElement("div")
   let title = document.createElement("h2")
-  title.innerText = user + (bot.users[userID].bot ? " [BOT]" : "")
+  title.innerText = user + (bot.users[userID] && bot.users[userID].bot ? " [BOT]" : "")
   title.classList = "username"
   msgobj.appendChild(title)
   let avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
@@ -469,8 +469,22 @@ $(document).ready(function () {
     token: window.localStorage.getItem("token"),
     autorun: true
   })
-
   BotListeners()
+  $("#create-server").click(function() {
+    bot.createServer({
+      icon: null,
+      name: $("#new-server-name").val(),
+      region: "brazil"
+    }, function(err, resp) {
+      if(err) return alert("Error creating guild: " + err)
+      $.modal.close()
+      console.log(resp)
+      setTimeout(function() {
+        ChannelChange(resp.id)
+        loadServers()
+      }, 1000) // We wait to change to it since bot.channels doesn't update immediatly
+    })
+  })
   document.getElementById("file-upload").onchange = function (ev) {
     let fr = new FileReader()
     fr.onload = function (result) {
@@ -674,7 +688,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 function loadServers() {
   document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
   let srvlist = bot.internals.settings.guild_positions || Object.keys(bot.servers)
-  srvlist.forEach(function (srv) {
+  srvlist.forEach(function (srv, i) {
     let server = bot.servers[srv]
     if (!server) {
       console.log("Skipping " + server)
@@ -698,6 +712,24 @@ function loadServers() {
       ChannelChange(server.id, true)
     }
     document.getElementById("server-list").insertBefore(servernode, null)
+    if(i + 1 >= srvlist.length) {
+      let addnode = document.createElement("a")
+      addnode.href = "#"
+      addnode.classList = "server-icon"
+      addnode.id = "new-server-btn"
+      let addimg = document.createElement("img")
+      addimg.src = "new-guild.png"
+      addimg.classList = "server-image"
+      addimg.onload = () => {
+        addimg.style.background = "none"
+      }
+      addnode.appendChild(addimg)
+      addnode.onclick = function() {
+        console.log("New server?")
+        $("#new-server-modal").modal()
+      }
+      document.getElementById("server-list").appendChild(addnode, null)
+    }
   })
 }
 

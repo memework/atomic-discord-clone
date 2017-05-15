@@ -9,6 +9,7 @@
     <script>
         if (window.module) module = window.module;
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.js"></script>
     <script src="discord.io.js"></script>
     <script src="discord-controller.js"></script>
     <link rel="stylesheet" href="https://rawgit.com/xLs51/Twemoji-Picker/master/css/twemoji-picker.css">
@@ -19,6 +20,7 @@
         crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Arimo" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.5.4/jquery.timeago.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.css">
 </head>
 <div id="loading-landing">
     <img src="loading.gif" alt="Loading indicator" id="loading-image">
@@ -44,10 +46,15 @@
         <div id="member-list">
         </div>
         <label for="file-upload">Attach Files</label>
-        <label for="file-upload">Upload Avatar</label>
+        <label for="avatar-upload">Upload Avatar</label>
         <input type="file" id="file-upload">
         <input type="file" id="avatar-upload">
         <div class="git-revision">1234567 - 891234</div>
+    </div>
+    <div id="new-server-modal" style="display:none;">
+        <label for="create-server">Server Name</label><br>
+        <input type="text" id="new-server-name" placeholder="Server Name"><br>
+        <button id="create-server" rel="modal:close">Create Server</button>
     </div>
 </body>
 

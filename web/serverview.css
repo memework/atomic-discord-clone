@@ -135,7 +135,33 @@ input[type="file"] {
   display: none;
 }
 
-label {
+label[for="create-server"] {
+  font-weight: bolder;
+  font-size: 0.5em;
+  color: #B0B0B0;
+}
+
+button {
+  width: 100%;
+  background-color: #7289DA;
+  color: #FFF;
+  margin-top: 20px;
+  font-size: 2em;
+  border-radius: 3px;
+  border: none;
+}
+
+input[type="text"] {
+  border: none;
+  border-bottom: 2px solid #7289DA;
+  padding-bottom: 3px;
+  background-color: rgba(0, 0, 0, 0);
+  color: #000;
+  font-size: 1.3em;
+  width: 100%;
+}
+
+label[for="file-upload"], label[for="avatar-upload"] {
   display: block;
   height: 25px;
   text-align: center;
