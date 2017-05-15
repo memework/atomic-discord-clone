@@ -247,7 +247,7 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     setTimeout(function () {
       loadServers()
       loadMessages(true)
-    }, 2000)
+    }, 4000)
   })
 
   let disconnectsInTimeout = 0
