@@ -4,7 +4,37 @@ let shell
 let bot
 let atomicRevision = "N/A"
 let litecordRevision = "N/A"
+let chalk
+let conzole = console // Such a hack for eslint LUL
+let logger = {
+  log: function (msg) {
+    let txt = `[ INFO ] ${msg}`
+    if (IsNode) process.stdout.write("[ " + chalk.blue("INFO") + " ] " + chalk.blue(msg) + "\n")
+    conzole.log(txt)
+  },
+  warn: function (msg) {
+    let txt = `[ WARN ] ${msg}`
+    if (IsNode) process.stdout.write("[ " + chalk.yellow("WARN") + " ] " + chalk.yellow(msg) + "\n")
+    conzole.warn(txt)
+  },
+  error: function (msg) {
+    let txt = `[ ERROR ] ${msg}`
+    if (IsNode) process.stdout.write("[ " + chalk.red("ERROR") + " ] " + chalk.red(msg) + "\n")
+    conzole.error(txt)
+  },
+  debug: function (msg) {
+    let txt = `[ DEBUG ] ${msg}`
+    if (IsNode) process.stdout.write("[ " + chalk.grey("DEBUG") + " ] " + chalk.bgWhite(chalk.grey(msg)) + "\n")
+    conzole.log(txt)
+  },
+  ok: function (msg) {
+    let txt = `[ SUCCESS ] ${msg}`
+    if (IsNode) process.stdout.write("[ " + chalk.green("SUCCESS") + " ] " + chalk.green(msg) + "\n")
+    conzole.log(txt)
+  }
+}
 if (IsNode) {
+  chalk = require("chalk")
   notifier = require("node-notifier")
   shell = require("electron").shell
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
@@ -12,7 +42,7 @@ if (IsNode) {
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com"
 const endpoint = "http://litecord.memework.org/api"
-let shortcodes = {} // require('./emojis.json') // We just leave this empty before the request finishes so the page will still load
+let shortcodes = {} // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
   shortcodes = result
@@ -32,17 +62,78 @@ $.get("version.txt", function (result) {
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
+function sanitizeHTML(content) {
+  let container = document.createElement("div")
+  container.innerText = content
+  return container.innerHTML
+}
+
+function parseDiscordEmotes(content) {
+  let arr = content.innerHTML.match(/&lt;:\S*:[0-9]{18}&gt;/gi)
+  if (!arr) arr = []
+  for (let itm in arr) {
+    let emote = arr[itm]
+    let colsplit = emote.split(":")
+    let link = `${cdn}/emojis/${colsplit[colsplit.length - 1].substring(0, colsplit[colsplit.length - 1].length - 4)}.png`
+    let imgnode = document.createElement("img")
+    imgnode.classList = "emoji"
+    imgnode.style.background = "none"
+    // imgnode.height = "22px"
+    // imgnode.width = "22px"
+    imgnode.style.maxWidth = "22px"
+    imgnode.style.whiteSpace = "nowrap"
+    imgnode.style.display = "inline"
+    imgnode.style.verticalAlign = "top"
+
+    imgnode.src = link
+    imgnode.alt = emote
+    content.innerHTML = content.innerHTML.replace(emote, imgnode.outerHTML)
+  }
+  return content
+}
+
+function createLinksAndImages(content, images) {
+  let arr = content.innerHTML.match(urlexp)
+  for (let itm in arr) {
+    let link = arr[itm]
+    logger.debug("Adding " + link + " to DOM")
+    let anode = document.createElement("a")
+    anode.onclick = () => {
+      if (IsNode) shell.openExternal(link)
+      else window.open(link, "_blank").focus()
+    }
+    anode.href = "#"
+    anode.innerHTML = link
+    content.innerHTML = content.innerHTML.replace(link, anode.outerHTML)
+    if (link.match(imgexp)) {
+      logger.debug("Adding " + link + " as an image...")
+      let imgnode = document.createElement("img")
+      imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
+      imgnode.onload = () => {
+        imgnode.style.background = "none"
+      }
+      imgnode.onerror = function () {
+        imgnode.remove()
+        logger.warn("Failed to load image " + imgnode.src)
+      }
+      images.appendChild(imgnode)
+    }
+  }
+  return {
+    links: content,
+    imghtml: images
+  }
+}
+
 const inviteexp = / /
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
-  let { user, userID, channelID, messageID, serverID, message, event, timestamp, attachments } = messageInfo
-  message = bot.fixMessage(message).replace(/\n/g, "<br>") // Just to make it a bit more readable while we have no mentions set up
+  let { user, userID, channelID, messageID, serverID, message, event, timestamp } = messageInfo
+  message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
   let channel = bot.channels[channelID]
-  let serverName = bot.servers[serverID] ? bot.servers[serverID].name : ""
   if (window.channelID != channelID) return
   document.getElementById("message-input").setAttribute("placeholder", "Message #" + channel.name || "")
-  // ChannelChange(channelID)
   window.channelID = channelID
   // We got a new message
   let container = document.createElement("div")
@@ -52,7 +143,7 @@ function addMessageToDOM(messageInfo, complete) {
   title.classList = "username"
   msgobj.appendChild(title)
   let avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
-  if(event.d.author.avatar) avatarurl = `${cdn}/avatars/${userID}/${event.d.author.avatar}.webp?size=64`
+  if (event.d.author.avatar) avatarurl = `${cdn}/avatars/${userID}/${event.d.author.avatar}.webp?size=64`
   let avatar = document.createElement("img")
   avatar.src = avatarurl
   avatar.classList = "avatar"
@@ -80,58 +171,23 @@ function addMessageToDOM(messageInfo, complete) {
     message = message.replace(new RegExp(":" + short + ":"), myemotes) // Here we replace the emotes with their HTML representations
   }
 
-  args = message.split(/\s/g)
-  for (let itm in args) {
-    if (urlexp.test(args[itm])) {
-      let link = args[itm]
-      let anode = document.createElement("a")
-      anode.onclick = () => {
-        if (IsNode) shell.openExternal(link)
-        else window.open(link, "_blank").focus()
-      }
-      anode.href = "#"
-      anode.innerHTML = link
-      content.innerHTML += " "
-      if (link.match(imgexp)) {
-        let imgnode = document.createElement("img")
-        imgnode.onload = () => {
-          imgnode.style.background = "none"
-        }
-        imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
-        images.appendChild(imgnode)
-      } else if (link.match(inviteexp)) {
-        let inv = link.replace(invitebase, "")
-        bot.queryInvite(inv, function (err, resp) {
-          if (err) return console.log(err)
-          anode.innerHTML = resp.name + " "
-          anode.onclick = () => {
-            bot.acceptInvite(inv, function (err, resp) {
-              loadServers()
-              ChannelChange(resp.id)
-            })
-          }
-        })
-      }
-      content.appendChild(anode)
-    } else if (emojiexp.test(args[itm])) {
-      let colsplit = args[itm].split(":")
-      let link = `${cdn}/emojis/${colsplit[colsplit.length - 1].substring(0, colsplit[colsplit.length - 1].length - 1)}.png`
-      // console.log(link)
-      let imgnode = document.createElement("img")
-      imgnode.classList = "emoji"
-      imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
-      content.innerHTML += " " + imgnode.outerHTML
-    } else {
-      content.innerHTML += " " + twemoji.parse(args[itm])
-    }
-  }
+  content.innerHTML = sanitizeHTML(message)
+  let { imghtml, links } = createLinksAndImages(content, images)
+  content = links
+  images = imghtml
+  content = parseDiscordEmotes(content)
+  content.innerHTML = twemoji.parse(content.innerHTML)
 
   for (let att in event.d.attachments) {
     let imgnode = document.createElement("img")
-    imgnode.onload = () => {
+    imgnode.src = event.d.attachments[att].proxy_url
+    imgnode.onload = function () {
       imgnode.style.background = "none"
     }
-    imgnode.src = event.d.attachments[att].proxy_url
+    imgnode.onerror = function () {
+      imgnode.destroy()
+      logger.warn("Failed to load image " + imgnode.src)
+    }
     images.appendChild(imgnode)
   }
 
@@ -147,7 +203,6 @@ function addMessageToDOM(messageInfo, complete) {
   }
   deletebtn.innerHTML = "<i class=\"fa fa-trash-o jumbotxt\" aria-hidden=\"true\"></i>"
 
-  // content.innerHTML = args.join(" ")
   complete({
     avatar,
     content,
@@ -165,7 +220,7 @@ function addMessageToDOM(messageInfo, complete) {
   }
 }
 
-function BotListeners() { // This is not indented on purpose as it's most of the code...
+function BotListeners() {
 
   bot.on("message", function (user, userID, channelID, message, event) {
     addMessageToDOM({
@@ -185,21 +240,20 @@ function BotListeners() { // This is not indented on purpose as it's most of the
       msgobj.appendChild(images)
       container.id = "msg-" + event.d.id
       container.classList = "message"
+      if (userID == bot.id) container.classList += " my-message"
       msgobj.classList = "message-inner"
       container.appendChild(msgobj)
       container.appendChild(deletebtn)
       document.getElementById("messages").appendChild(container)
-      // messages.appendChild(document.createElement("br"))
 
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10 // Scroll to bottom of page
     })
   })
 
   bot.on("messageUpdate", (oldmsg, newmsg) => {
-    if (!oldmsg || oldmsg.channel_id != window.channelID) return console.log("Skipping nonexistant message update...")
+    if (!oldmsg || oldmsg.channel_id != window.channelID) return
     let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
-    // if (!newmsg.content) return document.getElementById(`msg-${oldmsg.id}`).remove()
 
     addMessageToDOM({
       user: oldmsg.author.username,
@@ -223,17 +277,11 @@ function BotListeners() { // This is not indented on purpose as it's most of the
 
   bot.on("messageDelete", evnt => {
     let { channel_id, id } = evnt.d
-    if (channel_id != window.channelID) return console.log("Skipping nonexistent message deletion...")
+    if (channel_id != window.channelID) return
     document.getElementById("msg-" + id).remove()
   })
 
   bot.on("ready", function () {
-    if (IsNode) {
-      notifier.notify({
-        title: "Connected to Discord!",
-        message: "Successfully connected to Discord!"
-      })
-    }
     window.channelID = window.localStorage.getItem("lastchannel") || Object.keys(bot.channels)[0]
 
     window.currentMessages = {
@@ -241,7 +289,6 @@ function BotListeners() { // This is not indented on purpose as it's most of the
       arr: []
     }
     ChannelChange(window.channelID, true)
-    console.log("Ready")
     loadChannels()
     loadMembers()
     setTimeout(function () {
@@ -259,26 +306,26 @@ function BotListeners() { // This is not indented on purpose as it's most of the
     let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
     $("#loading-line").html(`${verb} ${adjective} ${noun}`)
     $("#loading-landing").css("display", "block")
-    let theTime = new Date().getTime()
-    if (IsNode) {
-      notifier.notify({
-        title: "Disconnected to Discord!",
-        message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
-      })
-    }
+    // This is wayyyy to annoying
+    // if (IsNode) {
+    //   notifier.notify({
+    //     title: "Disconnected to Discord!",
+    //     message: "Oh snap! I lost connection to Discord! Attempting to reconnect..."
+    //   })
+    // }
     disconnectsInTimeout += 1
     setInterval(() => {
       disconnectsInTimeout -= 1
-    }, 60 * 1000)
+    }, 5 * 60 * 1000)
     if (disconnectsInTimeout > 3) {
       if (IsNode) notifier.notify({
         title: "Unable to connect to Discord!",
-        message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last minute!"
+        message: "Sorry! Looks like I can't connect to Discord :( I've lost connection more than 3 times in the last 5 minutes!"
       })
-      // return
+      return
     }
     bot.connect()
-    console.log("Error: " + err)
+    logger.log("Error: " + err)
   })
 }
 
@@ -294,7 +341,6 @@ let loadingLines = {
     "Nuking",
     "Initializing",
     "Leaving",
-    "Verbing",
     "Reticulating",
     "Banning",
     "Exploiting",
@@ -356,6 +402,8 @@ let loadingLines = {
     "Luna's",
     "Generic's",
     "Null's",
+    "Smol",
+    "Tol",
     ""
   ],
   nouns: [
@@ -446,21 +494,20 @@ let loadingLines = {
     "Passowrds",
     "JAVASCRIPTZZZ",
     "PC Masterrace",
-    "Console Masterrace",
+    "logger Masterrace",
     "Mobile Gamers *Giggle*",
     "/v/",
     "4chan",
     "Deep Web",
     "WABBIT SEASON",
-    "Wi-Fi Password",
-    ""
+    "Wi-Fi Password"
   ],
 }
 
 $(document).ready(function () {
   $(document).on("keypress", function (e) {
     var tag = e.target.tagName.toLowerCase()
-    if (tag != "input" && tag != "textarea" && tag != "select") {
+    if (tag != "input" && tag != "textarea" && tag != "select" && !$(e.target).attr("contenteditable")) {
       $(".twemoji-textarea").focus()
     }
   })
@@ -470,16 +517,15 @@ $(document).ready(function () {
     autorun: true
   })
   BotListeners()
-  $("#create-server").click(function() {
+  $("#create-server").click(function () {
     bot.createServer({
       icon: null,
       name: $("#new-server-name").val(),
       region: "brazil"
-    }, function(err, resp) {
-      if(err) return alert("Error creating guild: " + err)
+    }, function (err, resp) {
+      if (err) return alert("Error creating guild: " + err)
       $.modal.close()
-      console.log(resp)
-      setTimeout(function() {
+      setTimeout(function () {
         ChannelChange(resp.id)
         loadServers()
       }, 1000) // We wait to change to it since bot.channels doesn't update immediatly
@@ -493,8 +539,7 @@ $(document).ready(function () {
         file: new Buffer(this.result),
         filename: ev.target.files[0].name
       }, function (err, resp) {
-        if (err) console.log(err, resp)
-        console.log(resp)
+        if (err) logger.log(err)
       })
     }
     fr.readAsArrayBuffer(ev.target.files[0])
@@ -506,8 +551,7 @@ $(document).ready(function () {
       bot.editUserInfo({
         avatar: base64
       }, function (err, resp) {
-        if (err) console.log(err, resp)
-        console.log(resp)
+        if (err) logger.log(err)
       })
     }
     fr.readAsDataURL(ev.target.files[0])
@@ -517,8 +561,8 @@ $(document).ready(function () {
   let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
   $("#loading-line").html(`${verb} ${adjective} ${noun}`)
   $("#connection-problems > a").click(() => {
-    console.log(this.href)
-    shell.openExternal(this.href)
+    if (IsNode) shell.openExternal(this.href)
+    else window.open(this.href, "_blank")
   })
   $("#message-input").twemojiPicker({
     height: "2.5rem",
@@ -530,7 +574,6 @@ $(document).ready(function () {
     size: "35px",
   })
   let messageInput = document.getElementById("message-input")
-  // $("#message-input").emojioneArea()
   document.querySelector("div[contenteditable=\"true\"]").addEventListener("paste", function (e) {
     e.preventDefault()
     var text = e.clipboardData.getData("text/plain")
@@ -547,7 +590,6 @@ $(document).ready(function () {
       }
       let temp = document.createElement("div")
       temp.innerHTML = $("#message-input").text()
-      // $("#message-input").text().replace(/<br>/gi, "\n").replace(/<div>/gi, "").replace(/<\/div>/gi, "").replace(/&lt/gi, "<").replace(/&gt/gi, ">")
       bot.sendMessage({
         to: window.channelID,
         message: temp.innerText
@@ -557,17 +599,77 @@ $(document).ready(function () {
   })
   $("#messages").scroll(function () {
     if ($(this).scrollTop() === 0) {
-      console.log("TOP!")
       loadMessages()
     }
   })
+  let contextOptions = {
+    selector: ".message:not(.my-message)",
+    callback: function (key, options, a, b) {
+      let messageId = options.$trigger[0].id.replace("msg-", "")
+      let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
+      // TODO: Actually make these do stuff
+      switch (key) {
+        case "copy": {
+          var range = document.createRange()
+          range.selectNode(messageContent)
+          window.getSelection().addRange(range)
+
+          try {
+            document.execCommand("copy")
+          } catch (err) {
+            logger.warn(err)
+          }
+          window.getSelection().removeAllRanges()
+          logger.log("Copy")
+          break
+        }
+        case "delete": {
+          bot.deleteMessage({
+            channelID: window.channelID,
+            messageID: messageId
+          }, function (err) {
+            if (err) logger.warn(err)
+          })
+          break
+        }
+        case "edit": {
+          $(messageContent).attr("contenteditable", "true")
+          $(messageContent).focus()
+          $(messageContent).on("keydown", function (e) {
+            if (!e) e = window.event
+            var keyCode = e.keyCode || e.which
+            if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+              e.preventDefault()
+              bot.editMessage({
+                channelID: window.channelID,
+                messageID: messageId,
+                message: messageContent.innerText
+              }, function(err) {
+                if(err) logger.warn(err)
+              })
+              $(messageContent).attr("contenteditable", "false")
+            }
+          })
+          logger.log("Editing")
+          break
+        }
+      }
+    },
+    items: {
+      "copy": { name: "Copy", icon: "copy" },
+      "delete": { name: "Delete Message", icon: "delete" }
+    }
+  }
+  $.contextMenu(contextOptions)
+  contextOptions.selector = ".message.my-message"
+  contextOptions.items.edit = { name: "Edit Message", icon: "edit" }
+  $.contextMenu(contextOptions)
 })
 
 function ChannelChange(channelID, silent) {
   if (window.channelID == channelID) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
   let channel = bot.channels[channelID]
-  // if (!channel) return console.log("Skipping channel that doesn't exist")
   let server = bot.servers[channel.guild_id]
   document.title = `#${channel.name} in ${server.name} - ${channel.topic}`
   if (!silent) {
@@ -617,7 +719,6 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.getMessages(options, (err, messages) => {
     let oldScrollHeight = document.getElementById("messages").scrollHeight
-    // if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) messages.reverse()
     let scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
       for (let itm in messages) {
@@ -634,16 +735,14 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
     let len = messages.length
 
-    if(len <= 0) {
+    if (len <= 0) {
       if (hideLoaderAfter) $("#loading-landing").css("display", "none")
       if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight
       else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight
       return
     }
-    
-    messages.forEach(function (curmsg, i) {
-      // let curmsg = messages[itm]
 
+    messages.forEach(function (curmsg, i) {
       if (!curmsg || !curmsg.author) return
       let message = curmsg.content
       let user = curmsg.author.username
@@ -670,12 +769,12 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
         msgobj.appendChild(images)
         container.id = "msg-" + event.d.id
         container.classList = "message"
+        if (userID == bot.id) container.classList += " my-message"
         msgobj.classList = "message-inner"
         container.appendChild(msgobj)
         container.appendChild(deletebtn)
         document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0])
       })
-      console.log("Adding message")
       if (i + 1 >= len) {
         if (hideLoaderAfter) $("#loading-landing").css("display", "none")
         if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight
@@ -690,10 +789,7 @@ function loadServers() {
   let srvlist = bot.internals.settings.guild_positions || Object.keys(bot.servers)
   srvlist.forEach(function (srv, i) {
     let server = bot.servers[srv]
-    if (!server) {
-      console.log("Skipping " + server)
-      return
-    }
+    if (!server) return
     let servericon = `${cdn}/icons/${server.id}/${server.icon}.webp?size=256`
     if (!server.icon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
     if (server.unavailable) servericon = "unavailable.png"
@@ -712,7 +808,7 @@ function loadServers() {
       ChannelChange(server.id, true)
     }
     document.getElementById("server-list").insertBefore(servernode, null)
-    if(i + 1 >= srvlist.length) {
+    if (i + 1 >= srvlist.length) {
       let addnode = document.createElement("a")
       addnode.href = "#"
       addnode.classList = "server-icon"
@@ -724,8 +820,7 @@ function loadServers() {
         addimg.style.background = "none"
       }
       addnode.appendChild(addimg)
-      addnode.onclick = function() {
-        console.log("New server?")
+      addnode.onclick = function () {
         $("#new-server-modal").modal()
       }
       document.getElementById("server-list").appendChild(addnode, null)

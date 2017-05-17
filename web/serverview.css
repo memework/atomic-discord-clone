@@ -10,7 +10,7 @@
   user-select: none;
 }
 
-.selectable {
+.selectable, .message-inner .content {
   -moz-user-select: -moz-auto;
   -moz-user-select: auto;
   -o-user-select: auto;
