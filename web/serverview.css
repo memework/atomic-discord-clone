@@ -42,6 +42,17 @@ html, body {
   overflow-y: hidden;
 }
 
+underline {
+  text-decoration: underline;
+}
+
+code {
+  background-color: #303338;
+  color: #EEE;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
 body {
   z-index: -1;
 }

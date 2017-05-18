@@ -125,6 +125,42 @@ function createLinksAndImages(content, images) {
   }
 }
 
+function parseMarkdown(content) {
+  let txt = content.innerHTML
+  let bold = txt.match(/\*\*.*\*\*/g)
+  for(let i in bold) {
+    logger.debug("Bold")
+    match = bold[i]
+    txt = txt.replace(match, "<b>" + match.replace(/\*\*/g, "") + "</b>")
+  }
+  let underlined = txt.match(/__.*__/g)
+  for(let i in underlined) {
+    logger.debug("Underline")
+    match = underlined[i]
+    txt = txt.replace(match, "<underline>" + match.replace(/\_\_/g, "") + "</underline>")
+  }
+  let italics =  txt.match(/(\*.*\*|_.*_)/g)
+  for(let i in italics) {
+    logger.debug("Italics")
+    match = italics[i]
+    txt = txt.replace(match, "<i>" + match.replace(/\*/g, "").replace(/\_/g, "") + "</i>")
+  }
+  let strikethrough = txt.match(/~~.*~~/g)
+  for(let i in strikethrough) {
+    logger.debug("Strikethru")
+    match = strikethrough[i]
+    txt = txt.replace(match, "<strike>" + match.replace(/~~/g, "") + "</strike>")
+  }
+  let code = txt.match(/`.*`/g)
+  for(let i in code) {
+    logger.debug("Code")
+    match = code[i]
+    txt = txt.replace(match, "<code>" + match.replace(/`/g, "") + "</code>")
+  }
+  content.innerHTML = txt
+  return content
+}
+
 const inviteexp = / /
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
@@ -176,6 +212,7 @@ function addMessageToDOM(messageInfo, complete) {
   content = links
   images = imghtml
   content = parseDiscordEmotes(content)
+  content = parseMarkdown(content)
   content.innerHTML = twemoji.parse(content.innerHTML)
 
   for (let att in event.d.attachments) {
