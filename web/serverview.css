@@ -39,6 +39,7 @@ html, body {
   background: #2C2F33;
   color: #FFF;
   padding-bottom: 1rem;
+  overflow-y: hidden;
 }
 
 body {

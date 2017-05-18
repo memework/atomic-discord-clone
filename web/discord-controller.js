@@ -191,25 +191,12 @@ function addMessageToDOM(messageInfo, complete) {
     images.appendChild(imgnode)
   }
 
-  let deletebtn = document.createElement("div")
-  deletebtn.onclick = function () {
-    bot.deleteMessage({
-      channelID: channelID,
-      messageID: messageID
-    }, (err) => {
-      if (err && err != "ResponseError: Error: SyntaxError: Unexpected end of JSON input") return alert("Error while deleting message: " + err)
-      // We don't remove it from the DOM because the messageDelete event is fired
-    })
-  }
-  deletebtn.innerHTML = "<i class=\"fa fa-trash-o jumbotxt\" aria-hidden=\"true\"></i>"
-
   complete({
     avatar,
     content,
     images,
     msgobj,
-    container,
-    deletebtn
+    container
   })
 
   if (userID != bot.id) {
@@ -233,7 +220,7 @@ function BotListeners() {
       event,
       timestamp: event.d.timestamp
     }, function (nodes) {
-      let { avatar, content, images, msgobj, container, deletebtn } = nodes
+      let { avatar, content, images, msgobj, container } = nodes
 
       container.appendChild(avatar)
       msgobj.appendChild(content)
@@ -243,7 +230,6 @@ function BotListeners() {
       if (userID == bot.id) container.classList += " my-message"
       msgobj.classList = "message-inner"
       container.appendChild(msgobj)
-      container.appendChild(deletebtn)
       document.getElementById("messages").appendChild(container)
 
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10 // Scroll to bottom of page
@@ -763,7 +749,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
         event,
         timestamp
       }, function (items) {
-        let { avatar, content, images, msgobj, container, deletebtn } = items
+        let { avatar, content, images, msgobj, container } = items
         container.appendChild(avatar)
         msgobj.appendChild(content)
         msgobj.appendChild(images)
@@ -772,7 +758,6 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
         if (userID == bot.id) container.classList += " my-message"
         msgobj.classList = "message-inner"
         container.appendChild(msgobj)
-        container.appendChild(deletebtn)
         document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0])
       })
       if (i + 1 >= len) {
