@@ -42,6 +42,7 @@ if (IsNode) {
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com"
 const endpoint = "http://litecord.memework.org/api"
+const inviteBase = "https://discord.gg"
 let shortcodes = {} // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
@@ -623,6 +624,29 @@ $(document).ready(function () {
   $("#messages").scroll(function () {
     if ($(this).scrollTop() === 0) {
       loadMessages()
+    }
+  })
+  $.contextMenu({
+    selector: ".channel-btn",
+    callback: function(key, options) {
+      switch(key) {
+        case "invite": {
+          bot.createInvite({
+            channelID: options.$trigger[0].id,
+            max_users: 0,
+            max_age: 0
+          }, function(err, resp) {
+            if(err) return logger.warn(err)
+            $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${resp.code}`)
+            $("#display-invite-modal > h2 > span#server-name").text(resp.guild.name)
+            $("#display-invite-modal").modal()
+          })
+          break
+        }
+      }
+    },
+    items: {
+      invite: {name: "Create Instant Invite", icon: "add"}
     }
   })
   let contextOptions = {

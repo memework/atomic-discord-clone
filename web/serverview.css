@@ -57,6 +57,33 @@ body {
   z-index: -1;
 }
 
+.modal * {
+  color: #000;
+}
+
+.modal button {
+  color: #FFF;
+}
+
+#display-invite-modal .lead, #display-invite-modal .lead * {
+  margin: 10px auto;
+}
+
+#display-invite-modal .subheading {
+  font-size: 0.85em;
+  display: block;
+  padding-bottom: 10px;
+}
+
+#display-invite-modal #invite-text {
+  color: #7289DA;
+  font-size: 2em;
+  padding: 0 5%;
+  text-align: center;
+  border-radius: 5px;
+  border: solid #EEE 2px;
+}
+
 #messages {
   min-height: 50px;
   float: left;
