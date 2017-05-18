@@ -64,9 +64,7 @@ $.get("version.txt", function (result) {
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
 function sanitizeHTML(content) {
-  let container = document.createElement("div")
-  container.innerText = content
-  return container.innerHTML
+  return $("<pre>").text(content).html().replace(/\n/g, "<br>")
 }
 
 function parseDiscordEmotes(content) {
@@ -94,12 +92,13 @@ function parseDiscordEmotes(content) {
 }
 
 function createLinksAndImages(content, images) {
-  let arr = content.innerHTML.match(urlexp)
+  let temphtml = content.innerHTML.replace(/```.*```/g, "").replace(/`.*`/g, "") // Big hack...
+  let arr = temphtml.match(/(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi)
   for (let itm in arr) {
     let link = arr[itm]
     logger.debug("Adding " + link + " to DOM")
     let anode = document.createElement("a")
-    anode.onclick = () => {
+    anode.onclick = function() {
       if (IsNode) shell.openExternal(link)
       else window.open(link, "_blank").focus()
     }
@@ -110,7 +109,7 @@ function createLinksAndImages(content, images) {
       logger.debug("Adding " + link + " as an image...")
       let imgnode = document.createElement("img")
       imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
-      imgnode.onload = () => {
+      imgnode.onload = function() {
         imgnode.style.background = "none"
       }
       imgnode.onerror = function () {
@@ -131,31 +130,45 @@ function parseMarkdown(content) {
   let bold = txt.match(/\*\*.*\*\*/g)
   for(let i in bold) {
     logger.debug("Bold")
-    match = bold[i]
+    let match = bold[i]
     txt = txt.replace(match, "<b>" + match.replace(/\*\*/g, "") + "</b>")
   }
   let underlined = txt.match(/__.*__/g)
   for(let i in underlined) {
     logger.debug("Underline")
-    match = underlined[i]
+    let match = underlined[i]
     txt = txt.replace(match, "<underline>" + match.replace(/\_\_/g, "") + "</underline>")
   }
   let italics =  txt.match(/(\*.*\*|_.*_)/g)
   for(let i in italics) {
     logger.debug("Italics")
-    match = italics[i]
+    let match = italics[i]
     txt = txt.replace(match, "<i>" + match.replace(/\*/g, "").replace(/\_/g, "") + "</i>")
   }
   let strikethrough = txt.match(/~~.*~~/g)
   for(let i in strikethrough) {
     logger.debug("Strikethru")
-    match = strikethrough[i]
+    let match = strikethrough[i]
     txt = txt.replace(match, "<strike>" + match.replace(/~~/g, "") + "</strike>")
+  }
+  let codeblock = txt.match(/```[\s\S]*```/g)
+  for(let i in codeblock) {
+    logger.debug("Codeblock")
+    let match = codeblock[i]
+    let finaltext = match.replace(/```/g, "")
+    let lang = finaltext.split("<br>")[0].toLowerCase()
+    logger.debug("CODEBLOCK LANG: " + lang)
+    if(hljs.getLanguage(lang)) {
+      finaltext = finaltext.replace(new RegExp(lang, "i"), "")
+      lang = "lang-" + lang
+    } else lang = "nohighlight"
+    finaltext = `<code class="codeblock ${lang}">${finaltext.replace(/^<br>+|<br>+$/gm, "")}</code>`
+    txt = txt.replace(match, finaltext)
   }
   let code = txt.match(/`.*`/g)
   for(let i in code) {
     logger.debug("Code")
-    match = code[i]
+    let match = code[i]
     txt = txt.replace(match, "<code>" + match.replace(/`/g, "") + "</code>")
   }
   content.innerHTML = txt
@@ -166,7 +179,7 @@ const inviteexp = / /
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
-  let { user, userID, channelID, messageID, serverID, message, event, timestamp } = messageInfo
+  let { user, userID, channelID, message, event, timestamp } = messageInfo
   message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
   let channel = bot.channels[channelID]
   if (window.channelID != channelID) return
@@ -176,7 +189,7 @@ function addMessageToDOM(messageInfo, complete) {
   let container = document.createElement("div")
   let msgobj = document.createElement("div")
   let title = document.createElement("h2")
-  title.innerText = user + (bot.users[userID] && bot.users[userID].bot ? " [BOT]" : "")
+  title.textContent = user + (bot.users[userID] && bot.users[userID].bot ? " [BOT]" : "")
   title.classList = "username"
   msgobj.appendChild(title)
   let avatarurl = "https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png"
@@ -194,15 +207,15 @@ function addMessageToDOM(messageInfo, complete) {
   let time = document.createElement("time")
   time.classList = "message-timestamp"
   time.dateTime = timestamp
-  time.innerText = $.timeago(timestamp)
-  $(time).ready(() => {
+  time.textContent = $.timeago(timestamp)
+  $(time).ready(function() {
     $(time).timeago()
   })
   msgobj.appendChild(time)
 
   for (let short in shortcodes) {
     let myemotes = ""
-    shortcodes[short].split("-").forEach(code => {
+    shortcodes[short].split("-").forEach(function(code) {
       myemotes += twemoji.convert.fromCodePoint(code)
     })
     message = message.replace(new RegExp(":" + short + ":"), myemotes) // Here we replace the emotes with their HTML representations
@@ -215,6 +228,11 @@ function addMessageToDOM(messageInfo, complete) {
   content = parseDiscordEmotes(content)
   content = parseMarkdown(content)
   content.innerHTML = twemoji.parse(content.innerHTML)
+  $(content).ready(function() {
+    $(content).find(".codeblock").not(".nohighlight").each(function(i, block) {
+      hljs.highlightBlock(block)
+    })
+  })
 
   for (let att in event.d.attachments) {
     let imgnode = document.createElement("img")
@@ -274,7 +292,7 @@ function BotListeners() {
     })
   })
 
-  bot.on("messageUpdate", (oldmsg, newmsg) => {
+  bot.on("messageUpdate", function(oldmsg, newmsg) {
     if (!oldmsg || oldmsg.channel_id != window.channelID) return
     let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
@@ -282,8 +300,8 @@ function BotListeners() {
     addMessageToDOM({
       user: oldmsg.author.username,
       userID: oldmsg.author.id,
-      channelID,
-      serverID: bot.channels[channelID].guild_id,
+      channelID: window.channelID,
+      serverID: bot.channels[window.channelID].guild_id,
       messageID: oldmsg.id,
       message,
       event: {
@@ -299,7 +317,7 @@ function BotListeners() {
     })
   })
 
-  bot.on("messageDelete", evnt => {
+  bot.on("messageDelete", function(evnt) {
     let { channel_id, id } = evnt.d
     if (channel_id != window.channelID) return
     document.getElementById("msg-" + id).remove()
@@ -323,7 +341,7 @@ function BotListeners() {
 
   let disconnectsInTimeout = 0
 
-  bot.on("disconnect", (err) => {
+  bot.on("disconnect", function(err) {
     if (err == "Authentication Failed") return window.location.href = "login.html"
     let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
     let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
@@ -338,7 +356,7 @@ function BotListeners() {
     //   })
     // }
     disconnectsInTimeout += 1
-    setInterval(() => {
+    setInterval(function() {
       disconnectsInTimeout -= 1
     }, 5 * 60 * 1000)
     if (disconnectsInTimeout > 3) {
@@ -557,7 +575,7 @@ $(document).ready(function () {
   })
   document.getElementById("file-upload").onchange = function (ev) {
     let fr = new FileReader()
-    fr.onload = function (result) {
+    fr.onload = function () {
       bot.uploadFile({
         to: window.channelID,
         file: new Buffer(this.result),
@@ -584,7 +602,7 @@ $(document).ready(function () {
   let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
   let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
   $("#loading-line").html(`${verb} ${adjective} ${noun}`)
-  $("#connection-problems > a").click(() => {
+  $("#connection-problems > a").click(function() {
     if (IsNode) shell.openExternal(this.href)
     else window.open(this.href, "_blank")
   })
@@ -616,7 +634,7 @@ $(document).ready(function () {
       temp.innerHTML = $("#message-input").text()
       bot.sendMessage({
         to: window.channelID,
-        message: temp.innerText
+        message: temp.textContent
       })
       $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("")
     }
@@ -690,7 +708,7 @@ $(document).ready(function () {
               bot.editMessage({
                 channelID: window.channelID,
                 messageID: messageId,
-                message: messageContent.innerText
+                message: messageContent.textContent
               }, function(err) {
                 if(err) logger.warn(err)
               })
@@ -744,7 +762,7 @@ function loadMembers() {
     let container = document.createElement("div")
     let avatar = document.createElement("img")
     let username = document.createElement("h2")
-    username.innerText = user.username
+    username.textContent = user.username
     avatar.src = avatarurl
     avatar.classList = "member-list-avatar"
     container.classList = "member-list-member"
@@ -764,7 +782,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
     before: 0
   }
   if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
-  bot.getMessages(options, (err, messages) => {
+  bot.getMessages(options, function(err, messages) {
     let oldScrollHeight = document.getElementById("messages").scrollHeight
     let scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
@@ -845,7 +863,7 @@ function loadServers() {
     let serverimg = document.createElement("img")
     serverimg.src = servericon
     serverimg.classList = "server-image"
-    serverimg.onload = () => {
+    serverimg.onload = function() {
       serverimg.style.background = "none"
     }
     servernode.appendChild(serverimg)
@@ -862,7 +880,7 @@ function loadServers() {
       let addimg = document.createElement("img")
       addimg.src = "new-guild.png"
       addimg.classList = "server-image"
-      addimg.onload = () => {
+      addimg.onload = function() {
         addimg.style.background = "none"
       }
       addnode.appendChild(addimg)

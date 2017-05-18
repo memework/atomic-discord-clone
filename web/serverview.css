@@ -61,6 +61,13 @@ body {
   color: #000;
 }
 
+.codeblock {
+  background-color: #303338 !important;
+  border-radius: 4px;
+  border: solid #26292e;
+  border-width: 2px;
+}
+
 .modal button {
   color: #FFF;
 }
@@ -140,6 +147,7 @@ img.emoji {
 #messages .message .message-inner .content {
   line-height: 1.5;
   margin: 0.5rem 0 0;
+  white-space: pre;
 }
 
 #channel-container {
