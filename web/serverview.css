@@ -147,7 +147,7 @@ img.emoji {
 #messages .message .message-inner .content {
   line-height: 1.5;
   margin: 0.5rem 0 0;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 #channel-container {
