@@ -67,6 +67,36 @@ function sanitizeHTML(content) {
   return $("<pre>").text(content).html().replace(/\n/g, "<br>")
 }
 
+function createEmbed(embed) {
+  if(!embed) return ""
+  let emb = document.createElement("div")
+  let title = document.createElement("h4")
+  let description = document.createElement("div")
+  let stamp = document.createElement("time")
+  let colorbar = document.createElement("div")
+  let image = document.createElement("img")
+  let thumb = document.createElement("img")
+  if(embed.title) {
+    $(title).text(embed.title)
+    emb.appendChild(parseMarkdown(title))
+  }
+  if(embed.description) {
+    $(description).text(embed.description)
+    emb.appendChild(parseMarkdown(description))
+  }
+  if(embed.thumbnail && embed.thumbnail.url) {
+    thumb.src = embed.thumbnail.url
+    thumb.classList = "embed-thumbnail"
+    emb.appendChild(thumb)
+  }
+  if(embed.image && embed.image.url) {
+    image.src = embed.image.url
+    image.classList = "embed-image"
+    emb.appendChild(image)
+  }
+  return emb.innerHTML
+}
+
 function parseDiscordEmotes(content) {
   let arr = content.innerHTML.match(/&lt;:\S*:[0-9]{18}&gt;/gi)
   if (!arr) arr = []
@@ -177,6 +207,8 @@ const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
   let { user, userID, channelID, message, event, timestamp } = messageInfo
+  let {embeds} = event.d
+  let embed = embeds[0]
   message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
   let channel = bot.channels[channelID]
   if (window.channelID != channelID) return
@@ -262,6 +294,11 @@ function addMessageToDOM(messageInfo, complete) {
       else window.open(link, "_blank").focus()
     }
   })
+
+  let embedobj = document.createElement("div")
+  embedobj.innerHTML = createEmbed(embed)
+  embedobj.classList = "embed"
+  msgobj.appendChild(embedobj)
 
   complete({
     avatar,
