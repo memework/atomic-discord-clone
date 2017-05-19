@@ -5,7 +5,7 @@ let bot
 let atomicRevision = "N/A"
 let litecordRevision = "N/A"
 let chalk
-let conzole = console // Such a hack for eslint LUL
+let conzole = console // Hack to fool ESLint
 let logger = {
   log: function (msg) {
     let txt = `[ INFO ] ${msg}`
@@ -93,7 +93,7 @@ function parseDiscordEmotes(content) {
 
 function createLinksAndImages(content, images) {
   let temphtml = content.innerHTML.replace(/```.*```/g, "").replace(/`.*`/g, "") // Big hack...
-  let arr = temphtml.match(/(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi)
+  let arr = temphtml.match(urlexp)
   for (let itm in arr) {
     let link = arr[itm]
     logger.debug("Adding " + link + " to DOM")
@@ -175,7 +175,6 @@ function parseMarkdown(content) {
   return content
 }
 
-const inviteexp = / /
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
@@ -580,20 +579,20 @@ $(document).ready(function () {
         to: window.channelID,
         file: new Buffer(this.result),
         filename: ev.target.files[0].name
-      }, function (err, resp) {
-        if (err) logger.log(err)
+      }, function (err) {
+        if (err) logger.warn(err)
       })
     }
     fr.readAsArrayBuffer(ev.target.files[0])
   }
   document.getElementById("avatar-upload").onchange = function (ev) {
     let fr = new FileReader()
-    fr.onload = function (result) {
+    fr.onload = function () {
       let base64 = this.result.replace(/data:.*,/, "")
       bot.editUserInfo({
         avatar: base64
-      }, function (err, resp) {
-        if (err) logger.log(err)
+      }, function (err) {
+        if (err) logger.warn(err)
       })
     }
     fr.readAsDataURL(ev.target.files[0])
@@ -648,19 +647,19 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function(key, options) {
       switch(key) {
-        case "invite": {
-          bot.createInvite({
-            channelID: options.$trigger[0].id,
-            max_users: 0,
-            max_age: 0
-          }, function(err, resp) {
-            if(err) return logger.warn(err)
-            $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${resp.code}`)
-            $("#display-invite-modal > h2 > span#server-name").text(resp.guild.name)
-            $("#display-invite-modal").modal()
-          })
-          break
-        }
+      case "invite": {
+        bot.createInvite({
+          channelID: options.$trigger[0].id,
+          max_users: 0,
+          max_age: 0
+        }, function(err, resp) {
+          if(err) return logger.warn(err)
+          $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${resp.code}`)
+          $("#display-invite-modal > h2 > span#server-name").text(resp.guild.name)
+          $("#display-invite-modal").modal()
+        })
+        break
+      }
       }
     },
     items: {
@@ -669,55 +668,55 @@ $(document).ready(function () {
   })
   let contextOptions = {
     selector: ".message:not(.my-message)",
-    callback: function (key, options, a, b) {
+    callback: function (key, options) {
       let messageId = options.$trigger[0].id.replace("msg-", "")
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-        case "copy": {
-          var range = document.createRange()
-          range.selectNode(messageContent)
-          window.getSelection().addRange(range)
+      case "copy": {
+        var range = document.createRange()
+        range.selectNode(messageContent)
+        window.getSelection().addRange(range)
 
-          try {
-            document.execCommand("copy")
-          } catch (err) {
-            logger.warn(err)
+        try {
+          document.execCommand("copy")
+        } catch (err) {
+          logger.warn(err)
+        }
+        window.getSelection().removeAllRanges()
+        logger.log("Copy")
+        break
+      }
+      case "delete": {
+        bot.deleteMessage({
+          channelID: window.channelID,
+          messageID: messageId
+        }, function (err) {
+          if (err) logger.warn(err)
+        })
+        break
+      }
+      case "edit": {
+        $(messageContent).attr("contenteditable", "true")
+        $(messageContent).focus()
+        $(messageContent).on("keydown", function (e) {
+          if (!e) e = window.event
+          var keyCode = e.keyCode || e.which
+          if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+            e.preventDefault()
+            bot.editMessage({
+              channelID: window.channelID,
+              messageID: messageId,
+              message: messageContent.textContent
+            }, function(err) {
+              if(err) logger.warn(err)
+            })
+            $(messageContent).attr("contenteditable", "false")
           }
-          window.getSelection().removeAllRanges()
-          logger.log("Copy")
-          break
-        }
-        case "delete": {
-          bot.deleteMessage({
-            channelID: window.channelID,
-            messageID: messageId
-          }, function (err) {
-            if (err) logger.warn(err)
-          })
-          break
-        }
-        case "edit": {
-          $(messageContent).attr("contenteditable", "true")
-          $(messageContent).focus()
-          $(messageContent).on("keydown", function (e) {
-            if (!e) e = window.event
-            var keyCode = e.keyCode || e.which
-            if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
-              e.preventDefault()
-              bot.editMessage({
-                channelID: window.channelID,
-                messageID: messageId,
-                message: messageContent.textContent
-              }, function(err) {
-                if(err) logger.warn(err)
-              })
-              $(messageContent).attr("contenteditable", "false")
-            }
-          })
-          logger.log("Editing")
-          break
-        }
+        })
+        logger.log("Editing")
+        break
+      }
       }
     },
     items: {
@@ -773,15 +772,13 @@ function loadMembers() {
   })
 }
 
-let emojiexp = /<:\S*:[0-9]{18}>/gi
-
 function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   let options = {
     channelID: window.channelID,
     limit: 100,
     before: 0
   }
-  if (window.currentMessages.channelID == channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
+  if (window.currentMessages.channelID == window.channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.getMessages(options, function(err, messages) {
     let oldScrollHeight = document.getElementById("messages").scrollHeight
     let scrolltobottom = window.currentMessages.channelID == window.channelID
@@ -894,8 +891,8 @@ function loadServers() {
 
 function loadChannels() {
   document.getElementById("channel-container").innerHTML = ""
-  if (!bot.channels[channelID]) return
-  let channelsob = bot.servers[bot.channels[channelID].guild_id].channels
+  if (!bot.channels[window.channelID]) return
+  let channelsob = bot.servers[bot.channels[window.channelID].guild_id].channels
   let channels = []
   for (let i in channelsob) {
     channels.push(channelsob[i])

@@ -89,6 +89,9 @@ body {
   text-align: center;
   border-radius: 5px;
   border: solid #EEE 2px;
+  overflow-x: scroll;
+  display: block;
+  width: 100%;
 }
 
 #messages {
