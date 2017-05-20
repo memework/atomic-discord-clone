@@ -68,7 +68,47 @@ function sanitizeHTML(content) {
 }
 
 function createEmbed(embed) {
-  if(!embed) return ""
+  logger.debug("Creating embed")
+  if (embed.type == "image") {
+    let link = embed.thumbnail.proxy_url
+    logger.debug("Adding " + link + " as an image...")
+    let imgnode = document.createElement("img")
+    imgnode.src = embed.thumbnail.proxy_url
+    imgnode.setAttribute("original-url", embed.thumbnail.url)
+    imgnode.onload = function () {
+      imgnode.style.background = "none"
+    }
+    imgnode.onerror = function () {
+      imgnode.remove()
+      logger.warn("Failed to load image " + imgnode.src)
+    }
+    return {type: "image", image: imgnode}
+  }
+  if(embed.type == "gifv") {
+    let link = embed.thumbnail.proxy_url
+    logger.debug("Adding " + link + " as an image...")
+    let vidnode = document.createElement("video")
+    let sourcenode = document.createElement("source")
+    vidnode.autoplay = "autoplay"
+    vidnode.muted = "muted"
+    vidnode.loop = "loop"
+    sourcenode.src = embed.video.url
+    vidnode.appendChild(sourcenode)
+    // <video class="post" poster="//i.imgur.com/zG4xS3kh.jpg" preload="auto" autoplay="autoplay" muted="muted" loop="loop" webkit-playsinline="" style="width: 524px; height: 931.556px;">
+    //   <source src="//i.imgur.com/zG4xS3k.mp4" type="video/mp4">
+    // </video>
+    vidnode.setAttribute("original-url", embed.thumbnail.url)
+    return {type: "image", image: vidnode}
+  }
+  if(embed.type == "video") {
+    let iframenode = document.createElement("iframe")
+    iframenode.width = "100%"
+    iframenode.height = "50%"
+    iframenode.src = embed.video.url
+    iframenode.frameBorder = 0
+    iframenode.allowFullscreen = true
+    return {type: "image", image: iframenode}
+  }
   let emb = document.createElement("div")
   let title = document.createElement("h4")
   let description = document.createElement("div")
@@ -76,31 +116,34 @@ function createEmbed(embed) {
   let colorbar = document.createElement("div")
   let image = document.createElement("img")
   let thumb = document.createElement("img")
-  if(embed.title) {
-    if(embed.url) {
+  if (embed.title) {
+    if (embed.url) {
       title = document.createElement("a")
       title.href = "#"
       title.setAttribute("data-link", embed.url)
-      title.classList = "masked-link"
-    }
+      title.classList = "masked-link title"
+    } else title.classList = "title"
     $(title).text(embed.title)
     emb.appendChild(parseMarkdown(title))
   }
-  if(embed.thumbnail && embed.thumbnail.url) {
+  if (embed.thumbnail && embed.thumbnail.url) {
+    // if(embed.thumbnail.width) thumb.width = embed.thumbnail.width + "px"
+    // if(embed.thumbnail.height) thumb.height = embed.thumbnail.height + "px" || 
     thumb.src = embed.thumbnail.url
     thumb.classList = "embed-thumbnail"
     emb.appendChild(thumb)
   }
-  if(embed.description) {
+  if (embed.description) {
     $(description).text(embed.description)
+    description = parseDiscordEmotes(description)
     emb.appendChild(parseMarkdown(description, true))
   }
-  if(embed.image && embed.image.url) {
+  if (embed.image && embed.image.url) {
     image.src = embed.image.url
     image.classList = "embed-image"
     emb.appendChild(image)
   }
-  return emb.innerHTML
+  return {type: "embed", embed: emb.innerHTML}
 }
 
 function parseDiscordEmotes(content) {
@@ -139,19 +182,6 @@ function createLinksAndImages(content, images) {
     anode.setAttribute("data-link", link)
     anode.innerHTML = link
     content.innerHTML = content.innerHTML.replace(link, anode.outerHTML)
-    if (link.match(imgexp)) {
-      logger.debug("Adding " + link + " as an image...")
-      let imgnode = document.createElement("img")
-      imgnode.src = "https://images.weserv.nl/?url=" + encodeURI(link.replace(/http(s|):\/\//i, ""))
-      imgnode.onload = function () {
-        imgnode.style.background = "none"
-      }
-      imgnode.onerror = function () {
-        imgnode.remove()
-        logger.warn("Failed to load image " + imgnode.src)
-      }
-      images.appendChild(imgnode)
-    }
   }
   return {
     links: content,
@@ -205,10 +235,10 @@ function parseMarkdown(content, maskedLinks) {
     let match = code[i]
     txt = txt.replace(match, "<code>" + match.replace(/`/g, "") + "</code>")
   }
-  if(maskedLinks) {
+  if (maskedLinks) {
     logger.debug("Masked links on")
     let masked = txt.match(/\[.*\]\((http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\)/gi)
-    for(let i in masked) {
+    for (let i in masked) {
       logger.debug("Masked link")
       let match = masked[i]
       let anode = document.createElement("a")
@@ -227,8 +257,8 @@ const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 function addMessageToDOM(messageInfo, complete) {
   let { user, userID, channelID, message, event, timestamp } = messageInfo
-  let {embeds} = event.d
-  let embed = embeds[0]
+  let { embeds } = event.d
+  logger.warn(JSON.stringify(event.d.embeds))
   message = bot.fixMessage(message) // Just to make it a bit more readable while we have no mentions set up
   let channel = bot.channels[channelID]
   if (window.channelID != channelID) return
@@ -314,11 +344,21 @@ function addMessageToDOM(messageInfo, complete) {
       else window.open(link, "_blank").focus()
     }
   })
-
-  let embedobj = document.createElement("div")
-  embedobj.innerHTML = createEmbed(embed)
-  embedobj.classList = "embed"
-  msgobj.appendChild(embedobj)
+  logger.ok(event.d.embeds.length)
+  let embedsobj = document.createElement("div")
+  for (let itm in event.d.embeds) {
+    let embd = createEmbed(event.d.embeds[itm])
+    if (embd.type == "embed") {
+      let embedobj = document.createElement("div")
+      embedobj.innerHTML = embd.embed
+      embedobj.classList = "embed"
+      embedsobj.appendChild(embedobj)
+    } else if(embd.type == "image") {
+      images.appendChild(embd.image)
+    }
+  }
+  console.log(content)
+  content.appendChild(embedsobj)
 
   complete({
     avatar,
@@ -354,6 +394,7 @@ function BotListeners() {
       container.appendChild(avatar)
       msgobj.appendChild(content)
       msgobj.appendChild(images)
+      console.log(images)
       container.id = "msg-" + event.d.id
       container.classList = "message"
       if (userID == bot.id) container.classList += " my-message"
@@ -379,7 +420,8 @@ function BotListeners() {
       message,
       event: {
         d: {
-          author: oldmsg.author
+          author: oldmsg.author,
+          embeds: newmsg.embeds
         }
       },
       timestamp: oldmsg.timestamp
