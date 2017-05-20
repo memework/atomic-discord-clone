@@ -77,17 +77,23 @@ function createEmbed(embed) {
   let image = document.createElement("img")
   let thumb = document.createElement("img")
   if(embed.title) {
+    if(embed.url) {
+      title = document.createElement("a")
+      title.href = "#"
+      title.setAttribute("data-link", embed.url)
+      title.classList = "masked-link"
+    }
     $(title).text(embed.title)
     emb.appendChild(parseMarkdown(title))
-  }
-  if(embed.description) {
-    $(description).text(embed.description)
-    emb.appendChild(parseMarkdown(description))
   }
   if(embed.thumbnail && embed.thumbnail.url) {
     thumb.src = embed.thumbnail.url
     thumb.classList = "embed-thumbnail"
     emb.appendChild(thumb)
+  }
+  if(embed.description) {
+    $(description).text(embed.description)
+    emb.appendChild(parseMarkdown(description, true))
   }
   if(embed.image && embed.image.url) {
     image.src = embed.image.url
@@ -153,7 +159,7 @@ function createLinksAndImages(content, images) {
   }
 }
 
-function parseMarkdown(content) {
+function parseMarkdown(content, maskedLinks) {
   let txt = content.innerHTML
   let bold = txt.match(/\*\*.*\*\*/g)
   for (let i in bold) {
@@ -198,6 +204,20 @@ function parseMarkdown(content) {
     logger.debug("Code")
     let match = code[i]
     txt = txt.replace(match, "<code>" + match.replace(/`/g, "") + "</code>")
+  }
+  if(maskedLinks) {
+    logger.debug("Masked links on")
+    let masked = txt.match(/\[.*\]\((http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\)/gi)
+    for(let i in masked) {
+      logger.debug("Masked link")
+      let match = masked[i]
+      let anode = document.createElement("a")
+      anode.href = "#"
+      anode.setAttribute("data-link", match.replace(/\[[\s\S]*\]\(/, "").replace(/\)/g, ""))
+      $(anode).text(match.replace("[", "").replace(/\].*/, ""))
+      anode.classList = "masked-link"
+      txt = txt.replace(match, anode.outerHTML)
+    }
   }
   content.innerHTML = txt
   return content

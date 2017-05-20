@@ -11,7 +11,7 @@
 }
 
 .embed {
-  max-width: 60%;
+  /*max-width: 60%;*/
   background-color: #23272A;
   border-radius: 5px;
   position: relative;
@@ -19,11 +19,12 @@
 
 .embed .embed-thumbnail {
   border-radius: 0.25%;
-  max-height: 500px;
-  max-width: 750px;
+  max-height: 100px;
+  max-width: 150px;
   float: right;
-  top: 0;
-  position: absolute;
+  display: block;
+  /*top: 0;*/
+  /*position: absolute;*/
 }
 
 .selectable, .message-inner .content {
