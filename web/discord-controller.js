@@ -43,9 +43,15 @@ if (IsNode) {
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
-const cdn = "https://cdn.discordapp.com"
-const endpoint = "https://discordapp.com"
-const inviteBase = "https://discord.gg"
+cdn = "https://cdn.discordapp.com"
+endpoint = "https://discordapp.com"
+inviteBase = "https://discord.gg"
+// Uncomment this next piece of code if running a local litecord
+/*
+cdn = "http://0.0.0.0:800/images"
+endpoint = "http://0.0.0.0:8000"
+inviteBase = "http://0.0.0.0:8000/invite"
+*/
 let shortcodes = {} // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
@@ -131,7 +137,7 @@ function createEmbed(embed) {
   }
   if (embed.thumbnail && embed.thumbnail.url) {
     // if(embed.thumbnail.width) thumb.width = embed.thumbnail.width + "px"
-    // if(embed.thumbnail.height) thumb.height = embed.thumbnail.height + "px" || 
+    // if(embed.thumbnail.height) thumb.height = embed.thumbnail.height + "px" ||
     thumb.src = embed.thumbnail.url
     thumb.classList = "embed-thumbnail"
     emb.appendChild(thumb)
