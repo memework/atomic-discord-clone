@@ -43,9 +43,9 @@ if (IsNode) {
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
-cdn = "https://cdn.discordapp.com"
-endpoint = "https://discordapp.com"
-inviteBase = "https://discord.gg"
+let cdn = "https://cdn.discordapp.com"
+let endpoint = "https://discordapp.com"
+let inviteBase = "https://discord.gg"
 // Uncomment this next piece of code if running a local litecord
 /*
 cdn = "http://0.0.0.0:800/images"
