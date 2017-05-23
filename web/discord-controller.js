@@ -6,8 +6,8 @@ let bot
 let atomicRevision = "N/A"
 let litecordRevision = "N/A"
 let chalk
-let Discord
 let conzole = console // Hack to fool ESLint
+let loadingLines = []
 let logger = {
   log: function (msg) {
     let txt = `[ INFO ] ${msg}`
@@ -39,9 +39,9 @@ if (IsNode) {
   chalk = require("chalk")
   notifier = require("node-notifier")
   shell = require("electron").shell
-  Discord = require("discord.js")
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
 }
+
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = "https://cdn.discordapp.com"
 const endpoint = "https://discordapp.com"
@@ -382,7 +382,7 @@ function BotListeners() {
       msgobj.appendChild(images)
       container.id = "msg-" + msg.id
       container.classList = "message"
-      if (msg.author.id == bot.id) container.classList += " my-message"
+      if (msg.author.id == bot.user.id) container.classList += " my-message"
       msgobj.classList = "message-inner"
       container.appendChild(msgobj)
       document.getElementById("messages").appendChild(container)
@@ -433,189 +433,12 @@ function BotListeners() {
   bot.on("disconnect", function (err) {
     logger.debug(err)
     if (err == "Authentication Failed") return window.location.href = "login.html"
-    let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
-    let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
-    let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
-    $("#loading-line").html(`${verb} ${adjective} ${noun}`)
+    $("#loading-line").html(window.loading_lines[Math.floor(Math.random() * window.loading_lines.length)])
     $("#loading-landing").css("display", "block")
   })
   bot.on("error", function (err) {
     logger.error(err)
   })
-}
-let loadingLines = {
-  verbs: [
-    "Loading",
-    "Enabling",
-    "Downloading",
-    "Uploading",
-    "Generating",
-    "Disabling",
-    "Deleting",
-    "Nuking",
-    "Initializing",
-    "Leaving",
-    "Reticulating",
-    "Banning",
-    "Exploiting",
-    "Resurrecting",
-    "Reviving",
-    "Amputating",
-    "Bleaching",
-    "Aging",
-    "Discarding",
-    "Inserting",
-    "Searching",
-    "Warming",
-    "Calibrating",
-    "Paging",
-    "Excavating",
-    "Evacuating",
-    "Counting",
-    "Testing",
-    "Launching",
-    "Burning",
-    "Hunting",
-    "Negotiating For The",
-    ""
-  ],
-  adjectives: [
-    "New",
-    "Old",
-    "Gray",
-    "Yellow",
-    "Fancy",
-    "Sentient",
-    "Intelligent",
-    "Weird",
-    "Unsaved",
-    "Dumb",
-    "Dead",
-    "Useless",
-    "Unconscious",
-    "Underused",
-    "Freaky",
-    "Robot",
-    "Buggy",
-    "Bannable",
-    "Spoopy",
-    "Annoying",
-    "Atomic",
-    "Little",
-    "Large",
-    "Tiny",
-    "Small",
-    "Cheesy",
-    "Backwards",
-    "Inifnite",
-    "The",
-    "1337",
-    "B1nzy's",
-    "Jake's",
-    "Heating's",
-    "Luna's",
-    "Generic's",
-    "Null's",
-    "Smol",
-    "Tol",
-    ""
-  ],
-  nouns: [
-    "Hammers",
-    "Buttons",
-    "Chisels",
-    "Nouns",
-    "Syringes",
-    "Splines",
-    "Ozones",
-    "Memes",
-    "Users",
-    "Guilds",
-    "Pixels",
-    "Pineapples",
-    "Cannons",
-    "Sweatshirts",
-    "Files",
-    "Chrome Installations",
-    "Adobe Flash Players",
-    "Java Versions",
-    "Loading Lines",
-    "Bananna Peels",
-    "Changes",
-    "Admins",
-    "B1nzy",
-    "Missiles",
-    "Generics",
-    "Heatingdevices",
-    "Cheese wedges",
-    "Jokes",
-    "Puns",
-    "Eggs",
-    "Soon&trade; Replies",
-    "Trains",
-    "Noots",
-    "Flux Capacitors",
-    "Quarters",
-    "Evidences",
-    "B1nzy Pings",
-    "Maps",
-    "Databases",
-    "Datacenters",
-    "Servers",
-    "Tokens",
-    "Dinosaurs",
-    "CLAAAAAAAAAAASs",
-    "Litecords",
-    "H4xx0rs",
-    "•w•s",
-    "Temperatures",
-    "Doctors",
-    "Sysadmins",
-    "Jake",
-    "Nelly",
-    "Hamsters",
-    "🤔",
-    "Thonk Hours",
-    "Cups",
-    "Pens",
-    "Cars",
-    "Emojis",
-    "Roads",
-    "Trees",
-    "Grass",
-    "Fences",
-    "Signs",
-    "Sciences",
-    "Terrorists",
-    "Goblins",
-    "Vikings",
-    "Raptors",
-    "Dinosaurs",
-    "ADDITIONAL PYLONS",
-    "Count Chocula",
-    "Horses",
-    "Darth Vader",
-    "Hot Pockets",
-    "Bill Nye the Science Guy&trade; <strike>Dolls</strike> <strong>Action Figures</strong>",
-    "Bieber",
-    "Batman",
-    "Superman",
-    "NotDiscord&trade;",
-    "Reddit",
-    "Wolfiri",
-    "Credit Cards",
-    "Accounts",
-    "Passowrds",
-    "JAVASCRIPTZZZ",
-    "PC Masterrace",
-    "logger Masterrace",
-    "Mobile Gamers *Giggle*",
-    "/v/",
-    "4chan",
-    "Deep Web",
-    "WABBIT SEASON",
-    "Wi-Fi Password"
-  ],
 }
 
 $(document).ready(function () {
@@ -668,10 +491,7 @@ $(document).ready(function () {
     }
     fr.readAsDataURL(ev.target.files[0])
   }
-  let verb = loadingLines.verbs[Math.floor(Math.random() * loadingLines.verbs.length)]
-  let adjective = loadingLines.adjectives[Math.floor(Math.random() * loadingLines.adjectives.length)]
-  let noun = loadingLines.nouns[Math.floor(Math.random() * loadingLines.nouns.length)]
-  $("#loading-line").html(`${verb} ${adjective} ${noun}`)
+  $("#loading-line").html(window.loading_lines[Math.floor(Math.random() * window.loading_lines.length)])
   $("#connection-problems > a").click(function () {
     if (IsNode) shell.openExternal(this.href)
     else window.open(this.href, "_blank")
@@ -900,7 +720,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
         msgobj.appendChild(images)
         container.id = "msg-" + curmsg.id
         container.classList = "message"
-        if (curmsg.author.id == bot.id) container.classList += " my-message"
+        if (curmsg.author.id == bot.user.id) container.classList += " my-message"
         msgobj.classList = "message-inner"
         container.appendChild(msgobj)
         document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0])
