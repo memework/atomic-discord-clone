@@ -131,7 +131,7 @@ function createEmbed(embed) {
   }
   if (embed.thumbnail && embed.thumbnail.url) {
     // if(embed.thumbnail.width) thumb.width = embed.thumbnail.width + "px"
-    // if(embed.thumbnail.height) thumb.height = embed.thumbnail.height + "px" || 
+    // if(embed.thumbnail.height) thumb.height = embed.thumbnail.height + "px" ||
     thumb.src = embed.thumbnail.url
     thumb.classList = "embed-thumbnail"
     emb.appendChild(thumb)
