@@ -1,0 +1,21 @@
+{
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": [
+            "jsdoc",
+            "closure"
+        ]
+    },
+    "source": {
+        "exclude": ["node_modules"]
+    },
+    "plugins": [],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "systemName": "Atomic Discord",
+        "theme": "yeti",
+        "linenums": true,
+        "inverseNav": true
+    }
+}

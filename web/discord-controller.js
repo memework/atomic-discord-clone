@@ -66,10 +66,25 @@ $.get("version.txt", function (result) {
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
+/**
+ * Sanitizes any HTML input and returns html output
+ * 
+ * @function
+ * @param {String} content - Unclean text to santize
+ * @returns {String} Sanitized HTML
+ */
 function sanitizeHTML(content) {
   return $("<pre>").text(content).html().replace(/\n/g, "<br>")
 }
 
+/**
+ *  Renders a given embed object
+ * 
+ * @function
+ * @param {Object} embed - JSON for an embed
+ * @returns {Object} Object containing type which can be either image or embed depending on whether it should have the embed wrapper around it
+ * @todo Add `fields` support
+ */
 function createEmbed(embed) {
   logger.debug("Creating embed")
   if (embed.type == "image") {
@@ -149,6 +164,13 @@ function createEmbed(embed) {
   return { type: "embed", embed: emb.innerHTML }
 }
 
+/**
+ * Replaces Discord emotes within the text with images of the emote
+ * 
+ * @function
+ * @param {DOMElement} content - A DOM object which whose content has been escaped
+ * @returns {DOMElement} The same DOM object as before, but the Discord emotes have been replaced with their respective images
+ */
 function parseDiscordEmotes(content) {
   let arr = content.innerHTML.match(/&lt;:\S*:[0-9]{18}&gt;/gi)
   if (!arr) arr = []
@@ -173,6 +195,14 @@ function parseDiscordEmotes(content) {
   return content
 }
 
+/**
+ * Converts occurances of textual links to a clickable link
+ * 
+ * @function
+ * @param {DOMElement} content - DOM Element whose innerHTML is to be modified to have links
+ * @param {DOMElement} images - Ignored in newer versions. Used to add images to the DOM but no longer does so
+ * @returns {Object} Object containing the keys `links` and `imghtml`. `links` is the `content` parameter from before but the textual links in it have been replaced with clickable links
+ */
 function createLinksAndImages(content, images) {
   let temphtml = content.innerHTML.replace(/```.*```/g, "").replace(/`.*`/g, "") // Big hack...
   let arr = temphtml.match(urlexp)
@@ -192,6 +222,14 @@ function createLinksAndImages(content, images) {
   }
 }
 
+/**
+ * Renders markdown
+ * 
+ * @function
+ * @param {DOMElement} content - DOM element whose innerHTML's markdown is to be rendered.
+ * @param {Boolean} maskedLinks - Boolean to enable or disable masked links such as [Link name](URL). Defaults to false
+ * @returns {DOMElement} `content` parameter from before but the markdown has been rendered
+ */
 function parseMarkdown(content, maskedLinks) {
   let txt = content.innerHTML
   let bold = txt.match(/\*\*.*\*\*/g)
@@ -258,6 +296,21 @@ function parseMarkdown(content, maskedLinks) {
 
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
 const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
+
+/**
+ * A callback used to handle the rendered HTML from addMessageToDOM
+ * 
+ * @callback addMessageToDOMCallback
+ * @param {Object} elements - Object containing all the DOM elements which are appened to each other. The keys are: `avatar`, `content`, `images`, `msgobj`, and `container`
+ */
+
+/**
+ * Renders a message to HTML
+ * 
+ * @function
+ * @param {Message} msg - Discord.js Message object to be rendered
+ * @param {addMessageToDOMCallback} complete - Callback that handles the elements
+ */
 function addMessageToDOM(msg, complete) {
   let { embeds } = msg
   let message = msg.cleanContent // Just to make it a bit more readable while we have no mentions set up
@@ -366,10 +419,14 @@ function addMessageToDOM(msg, complete) {
   })
 }
 
+/**
+ * Attaches the necessary listeners to the `bot` object
+ * 
+ * @function
+ */
 function BotListeners() {
   logger.debug("Bot Listeners intializing")
   bot.on("debug", function(message) {
-    // if(message.split(" ")[0] == "READY") botReady()
     logger.debug(message)
   })
   bot.on("warn", logger.warn)
@@ -426,9 +483,7 @@ function BotListeners() {
     document.getElementById("msg-" + msg.id).remove()
   })
 
-  bot.on("ready", botReady)
-
-  function botReady() {
+  bot.on("ready", function () {
     logger.ok("BOT CONNECTED")
     window.channelID = window.localStorage.getItem("lastchannel") || bot.channels.first().id
     if(!bot.channels.get(window.channelID)) window.channelID = bot.channels.first().id
@@ -442,7 +497,7 @@ function BotListeners() {
     loadMembers()
     loadServers()
     loadMessages(true)
-  }
+  })
 
   bot.on("disconnect", function (err) {
     logger.debug(err)
@@ -658,6 +713,13 @@ $(document).ready(function () {
   $.contextMenu(contextOptions)
 })
 
+/**
+ * Changes the channel to the given one
+ * 
+ * @function
+ * @param {String|Number} channelID - The ID of the channel to change to
+ * @param {Boolean} silent - Whether or not to show the message that the channel has been changed. Defaults to false
+ */
 function ChannelChange(channelID, silent) {
   if (window.channelID == channelID) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
@@ -678,21 +740,31 @@ function ChannelChange(channelID, silent) {
   loadMembers(0)
 }
 
-function loadMembers() {
+/**
+ * Populates the right pane with the member list
+ * 
+ * @function
+ * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
+ */
+function loadMembers(memb) {
+  if(memb && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("member-list").innerHTML = ""
   let mem = bot.channels.get(window.channelID).guild.members
   mem.forEach(function (user) {
     let container = document.createElement("div")
-    let avatar = document.createElement("img")
+    let avatar = document.createElement("div")
     let username = document.createElement("h2")
+    let presence = document.createElement("div")
     username.textContent = user.displayName
-    avatar.src = user.user.displayAvatarURL
+    avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL + "')"
     avatar.classList = "member-list-avatar"
+    presence.classList = "status status-" + user.user.id == bot.user.id ? bot.user.presence.status : user.user.presence.status
     container.classList = "member-list-member"
     username.classList = "member-list-username"
     username.style.color = user.displayHexColor
     username.id = user.user.id
     avatar.id = user.user.id
+    avatar.appendChild(presence)
     container.appendChild(avatar)
     container.appendChild(username)
     container.id = user.user.id
@@ -703,6 +775,12 @@ function loadMembers() {
   })
 }
 
+/**
+ * Loads the messages in the current channel
+ * 
+ * @function
+ * @param {Boolean} hideLoaderAfter - If true, hides the loading screen after it completes. Defaults to false
+ */
 function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   logger.debug("Grabbing messages")
   let options = {
@@ -761,6 +839,11 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   }).catch(logger.warn)
 }
 
+/**
+ * Renders the guild list
+ * 
+ * @function
+ */
 function loadServers() {
   document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
   let srvlist = bot.user.settings && bot.user.settings.guildPositions && bot.user.settings.guildPositions.length > 0 ? bot.user.settings.guildPositions : Array.from(bot.guilds.keys())
@@ -805,7 +888,14 @@ function loadServers() {
   })
 }
 
-function loadChannels() {
+/**
+ * Loads the channel list
+ * 
+ * @function
+ * @param {Channel} chan - Optional. If provided, checks if the channel is in the current guild before running.
+ */
+function loadChannels(chan) {
+  if(chan && chan.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("channel-container").innerHTML = ""
   if (!bot.channels.get(window.channelID)) return
   let channels = bot.channels.get(window.channelID).guild.channels.array()
