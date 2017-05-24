@@ -43,9 +43,9 @@ if (IsNode) {
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
-const cdn = "https://cdn.discordapp.com"
-const endpoint = "https://discordapp.com"
-const inviteBase = "https://discord.gg"
+const cdn = window.localStorage.getItem("url-cdn") || "https://cdn.discordapp.com"
+const endpoint = window.localStorage.getItem("url-api") || "https://discordapp.com"
+const inviteBase = window.localStorage.getItem("url-invite") || "https://discord.gg"
 let shortcodes = {} // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
@@ -560,18 +560,31 @@ $(document).ready(function () {
             logger.debug("User banned")
             loadMembers()
           }).catch(logger.warn)
+          break
         }
         case "kick": {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function() {
             logger.debug("User kicked")
             loadMembers()
           }).catch(logger.warn)
+          break
+        }
+        case "nickname": {
+          $("#nickname-modal").modal()
+          $("#change-nickname").click(function() {
+            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function() {
+              logger.debug("Set nickname")
+              $.modal.close()
+            }).catch(logger.warn)
+          })
+          break
         }
       }
     },
     items: {
       ban: {name: "Ban", icon: "hammer"},
-      kick: {name: "Kick", icon: "exit"}
+      kick: {name: "Kick", icon: "exit"},
+      nickname: {name: "Set Nickname", icon: "edit"}
     }
   })
   let contextOptions = {

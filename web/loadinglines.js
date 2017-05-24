@@ -1,9 +1,9 @@
 window.loading_lines = [
   "Finally loading",
   "Searching Memes",
-  "Giving up (╯°□°）╯︵ ┻━┻",
-  "Not Giving Up ┬─┬﻿ ノ( ゜-゜ノ)",
-  "I don't even know what to put here ¯\_(ツ)_/¯",
+  "Giving up \u0028\u256f\u00b0\u25a1\u00b0\uff09\u256f\ufe35\u0020\u253b\u2501\u253b",
+  "Not Giving Up \u252c\u2500\u252c\u0020\u30ce\u0028\u0020\u309c\u002d\u309c\u30ce\u0029",
+  "I don't even know what to put here \u00af\u005f\u0028\u30c4\u0029\u005f\u002f\u00af",
   "One Time, I saw a bird...",
   "How To Find Your Dog [Not ClickBait] [Gone WRONG]",
   "How To Double Your Wifi Speed (REALY WORKS)",
@@ -31,4 +31,7 @@ window.loading_lines = [
   "The Word \"Meme\"",
   "Harvesting surplus rapeseed",
   "Nothing: what did you expect?",
+  "Please insert quarter",
+  "Giving cats and dogs hammers",
+  "Dialing AOL"
 ]

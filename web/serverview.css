@@ -53,7 +53,7 @@
   max-width: 85%;
 }
 
-.selectable, .message-inner .content {
+.selectable, .message-inner .content, .message-inner .content * + * {
   -moz-user-select: -moz-auto;
   -moz-user-select: auto;
   -o-user-select: auto;
@@ -87,7 +87,6 @@ html, body {
   background: #2C2F33;
   color: #EEE;
   padding-bottom: 1rem;
-  overflow-y: hidden;
 }
 
 underline {
@@ -148,8 +147,7 @@ body {
   float: left;
   width: calc(100% - 150px);
   padding-left: 250px;
-  padding-bottom: 2rem;
-  height: calc(100vh - 1rem);
+  height: calc(100% - 1rem);
   overflow-y: auto;
 }
 #messages .message  {
@@ -162,14 +160,11 @@ body {
   border-radius: 0.15rem;
   padding: 0.2rem;
 
-  white-space: -moz-pre-wrap !important;
-  white-space: -pre-wrap;
-  white-space: -o-pre-wrap;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  white-space: -webkit-pre-wrap;
-  word-break: break-all;
-  white-space: normal;
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
 img {
@@ -206,7 +201,7 @@ img.emoji {
 #channel-container {
   position: absolute;
   margin-left: 50px;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   width: 200px;
   float: left;
@@ -402,7 +397,7 @@ time {
 
 #server-list {
   position: fixed;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   left: 0;
   padding-left: 5px;

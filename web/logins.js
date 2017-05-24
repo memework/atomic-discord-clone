@@ -1,4 +1,8 @@
-let APIBase = "" // "http://0.0.0.0:8000"
+$.ajaxSetup({
+  contentType: "application/json; charset=utf-8"
+})
+
+let APIBase = "https://discordapp.com" // "http://0.0.0.0:8000"
 
 $(document).ready(function() {
   $("#login").click(login)
