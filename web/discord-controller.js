@@ -394,10 +394,24 @@ function BotListeners() {
   bot.on("guildCreate", function() {
     loadServers()
   })
+  bot.on("guildDelete", function() {
+    loadServers()
+  })
+  bot.on("guildUnavailable", function() {
+    loadServers()
+  })
+
+  bot.on("channelDelete", loadChannels)
+  bot.on("channelCreate", loadChannels)
+  bot.on("channelUpdate", loadChannels)
+
+  bot.on("guildMemberAdd", loadMembers)
+  bot.on("guildMemberAvailable", loadMembers)
+  bot.on("guildMemberRemove", loadMembers)
+  bot.on("guildMemberUpdate", loadMembers)
 
   bot.on("messageUpdate", function (oldmsg, newmsg) {
     if (!oldmsg || oldmsg.channel.id != window.channelID) return
-    let message = newmsg.content
     let container = document.getElementById("msg-" + oldmsg.id)
 
     addMessageToDOM(newmsg, function (items) {
