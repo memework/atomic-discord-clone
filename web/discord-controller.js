@@ -3,11 +3,12 @@ const IsNode = typeof process == "undefined" ? false : true
 let notifier
 let shell
 let bot
+let fs
+let path
 let atomicRevision = "N/A"
 let litecordRevision = "N/A"
 let chalk
 let conzole = console // Hack to fool ESLint
-let loadingLines = []
 let logger = {
   log: function (msg) {
     let txt = `[ INFO ] ${msg}`
@@ -40,6 +41,8 @@ if (IsNode) {
   notifier = require("node-notifier")
   shell = require("electron").shell
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
+  fs = require("fs")
+  path = require("path")
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
@@ -65,6 +68,73 @@ $.get("version.txt", function (result) {
 
 // Uncomment this for first run... I just don't like having to change this every time :^)
 // window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
+
+/**
+ * An optional callback used to handle the resulting plugins array
+ * 
+ * @callback addMessageToDOMCallback
+ * @param {String|Error} error - An error object
+ * @param {Array} plugins - Array containing all the plugins
+ */
+
+/**
+ * Loads any plugins in the given directory
+ * 
+ * @function
+ * @param {String} dir - Path to search for plugins in
+ * @param {loadPluginsCallback} callback - Optional callback
+ * @todo Add more hooks!
+ * @todo Add support for disabling/reloading a plugin
+ */
+function loadPlugins(dir, callback) {
+  if (!IsNode) {
+    if (callback) return callback("Plugins are only supported on the desktop app")
+    else throw new Error("Plugins are only supported on the desktop app")
+  }
+  dir = path.resolve(dir)
+  fs.readdir(dir, function (err, files) {
+    if (err) {
+      if (callback) return callback(err)
+      else throw new Error("Error loading plugins " + err)
+    }
+    let plugins = []
+    let plugpaths = window.plugins.map(function (x) {
+      return x.file
+    })
+    files.forEach(function (plugin, i) {
+      if (plugpaths.includes(plugin)) return logger.debug("Skipping already-loaded plugin: " + plugin)
+      let pl = require(path.join(dir, path.basename(plugin)))
+      plugins.push({
+        file: plugin,
+        plugin: pl
+      })
+      for (let hk in pl.hooks) {
+        let hook = pl.hooks[hk]
+        switch (hook.trigger) {
+          case "load": {
+            hook.run(bot)
+            break
+          }
+          case "documentload": {
+            $(document).ready(function () {
+              hook.run(document)
+            })
+            break
+          }
+          default: { // We'll add more hooks soon™ but for now, this seems useful
+            bot.on(hook.trigger, hook.run)
+          }
+        }
+      }
+      if (i + 1 >= plugins.length) {
+        if (callback) callback(null, plugins)
+        window.plugins = window.plugins.concat(plugins)
+      }
+    })
+  })
+}
+
+window.plugins = []
 
 /**
  * Sanitizes any HTML input and returns html output
@@ -367,7 +437,7 @@ function addMessageToDOM(msg, complete) {
   })
 
   let attachments = msg.attachments.array()
-
+  logger.debug(attachments)
   for (let att in attachments) {
     let imgnode = document.createElement("img")
     imgnode.src = attachments[att].proxy_url
@@ -426,7 +496,7 @@ function addMessageToDOM(msg, complete) {
  */
 function BotListeners() {
   logger.debug("Bot Listeners intializing")
-  bot.on("debug", function(message) {
+  bot.on("debug", function (message) {
     logger.debug(message)
   })
   bot.on("warn", logger.warn)
@@ -448,13 +518,13 @@ function BotListeners() {
     })
   })
 
-  bot.on("guildCreate", function() {
+  bot.on("guildCreate", function () {
     loadServers()
   })
-  bot.on("guildDelete", function() {
+  bot.on("guildDelete", function () {
     loadServers()
   })
-  bot.on("guildUnavailable", function() {
+  bot.on("guildUnavailable", function () {
     loadServers()
   })
 
@@ -486,7 +556,7 @@ function BotListeners() {
   bot.on("ready", function () {
     logger.ok("BOT CONNECTED")
     window.channelID = window.localStorage.getItem("lastchannel") || bot.channels.first().id
-    if(!bot.channels.get(window.channelID)) window.channelID = bot.channels.first().id
+    if (!bot.channels.get(window.channelID)) window.channelID = bot.channels.first().id
 
     window.currentMessages = {
       channelID: window.channelID,
@@ -511,6 +581,12 @@ function BotListeners() {
 }
 
 $(document).ready(function () {
+  if (IsNode) {
+    loadPlugins("atomic-plugins", function (err, plugins) {
+      if (err) return logger.error(err)
+      logger.debug(JSON.stringify(plugins))
+    })
+  }
   $(document).on("keypress", function (e) {
     var tag = e.target.tagName.toLowerCase()
     if (tag != "input" && tag != "textarea" && tag != "select" && !$(e.target).attr("contenteditable")) {
@@ -518,13 +594,13 @@ $(document).ready(function () {
     }
   })
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
-  bot = new Discord.Client({
+  window.bot = bot = new Discord.Client({
     http: {
       host: endpoint,
       cdn
     }
   })
-  bot.login(window.localStorage.getItem("token")).catch(function(err) {
+  bot.login(window.localStorage.getItem("token")).catch(function (err) {
     logger.error(err)
     window.location.href = "login.html"
   })
@@ -544,7 +620,7 @@ $(document).ready(function () {
           attachment: new Buffer(this.result),
           name: ev.target.files[0].name
         }]
-      }).then(function() {
+      }).then(function () {
         logger.debug("Uploaded file")
       }).catch(logger.warn)
     }
@@ -554,7 +630,7 @@ $(document).ready(function () {
     let fr = new FileReader()
     fr.onload = function () {
       let base64 = this.result.replace(/data:.*,/, "")
-      bot.user.setAvatar(base64).then(function() {
+      bot.user.setAvatar(base64).then(function () {
         logger.debug("Set avatar")
       }).catch(logger.warn)
     }
@@ -607,7 +683,7 @@ $(document).ready(function () {
             temporary: false,
             max_users: 0,
             max_age: 0
-          }).then(function(invite) {
+          }).then(function (invite) {
             $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
             $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
             $("#display-invite-modal").modal()
@@ -622,17 +698,17 @@ $(document).ready(function () {
   })
   $.contextMenu({
     selector: ".member-list-member",
-    callback: function(key, options) {
-      switch(key) {
+    callback: function (key, options) {
+      switch (key) {
         case "ban": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function() {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
             logger.debug("User banned")
             loadMembers()
           }).catch(logger.warn)
           break
         }
         case "kick": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function() {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
             logger.debug("User kicked")
             loadMembers()
           }).catch(logger.warn)
@@ -640,8 +716,8 @@ $(document).ready(function () {
         }
         case "nickname": {
           $("#nickname-modal").modal()
-          $("#change-nickname").click(function() {
-            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function() {
+          $("#change-nickname").click(function () {
+            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
               logger.debug("Set nickname")
               $.modal.close()
             }).catch(logger.warn)
@@ -651,9 +727,9 @@ $(document).ready(function () {
       }
     },
     items: {
-      ban: {name: "Ban", icon: "hammer"},
-      kick: {name: "Kick", icon: "exit"},
-      nickname: {name: "Set Nickname", icon: "edit"}
+      ban: { name: "Ban", icon: "hammer" },
+      kick: { name: "Kick", icon: "exit" },
+      nickname: { name: "Set Nickname", icon: "edit" }
     }
   })
   let contextOptions = {
@@ -678,7 +754,7 @@ $(document).ready(function () {
           break
         }
         case "delete": {
-          bot.channels.get(window.channelID).messages.get(messageId).delete().then(function() {
+          bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
             logger.debug("Deleted message " + messageId)
           }).catch(logger.warn)
           break
@@ -691,7 +767,7 @@ $(document).ready(function () {
             var keyCode = e.keyCode || e.which
             if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
               e.preventDefault()
-              bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function() {
+              bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
                 logger.debug("Edited message " + messageId)
               }).catch(logger.warn)
               $(messageContent).attr("contenteditable", "false")
@@ -747,7 +823,7 @@ function ChannelChange(channelID, silent) {
  * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
  */
 function loadMembers(memb) {
-  if(memb && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
+  if (memb && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("member-list").innerHTML = ""
   let mem = bot.channels.get(window.channelID).guild.members
   mem.forEach(function (user) {
@@ -758,7 +834,7 @@ function loadMembers(memb) {
     username.textContent = user.displayName
     avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL + "')"
     avatar.classList = "member-list-avatar"
-    presence.classList = "status status-" + user.user.id == bot.user.id ? bot.user.presence.status : user.user.presence.status
+    presence.classList = "status status-" + (user.user.id == bot.user.id ? bot.user.settings.status : user.user.presence.status)
     container.classList = "member-list-member"
     username.classList = "member-list-username"
     username.style.color = user.displayHexColor
@@ -895,7 +971,7 @@ function loadServers() {
  * @param {Channel} chan - Optional. If provided, checks if the channel is in the current guild before running.
  */
 function loadChannels(chan) {
-  if(chan && chan.guild.id != bot.channels.get(window.channelID).guild.id) return
+  if (chan && chan.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("channel-container").innerHTML = ""
   if (!bot.channels.get(window.channelID)) return
   let channels = bot.channels.get(window.channelID).guild.channels.array()
