@@ -482,7 +482,6 @@ function addMessageToDOM(msg, complete) {
       images.appendChild(embd.image)
     }
   }
-  console.log(content)
   content.appendChild(embedsobj)
 
   complete({
@@ -597,7 +596,7 @@ function voice(voiceChannelID) {
   leaveVoice()
   chan.join().then(function (connection) {
     let receiver = connection.createReceiver()
-    chan.members.forEach(function(user) {
+    chan.members.forEach(function (user) {
       // We create a connection for every user in case they had been speaking before we joined
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
     })
@@ -854,7 +853,6 @@ function ChannelChange(channelID, silent) {
   if (window.channelID == channelID) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
   let channel = bot.channels.get(channelID)
-  console.log(channel)
   let server = channel.guild
   document.title = `#${channel.name} in ${server.name} - ${channel.topic}`
   if (!silent) {
@@ -879,8 +877,10 @@ function ChannelChange(channelID, silent) {
 function loadMembers(memb) {
   if (memb && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("member-list").innerHTML = ""
-  let mem = bot.channels.get(window.channelID).guild.members
-  mem.forEach(function (user) {
+  let guild = bot.channels.get(window.channelID).guild
+  let mem = guild.members.array()
+  let roles = {}
+  mem.forEach(function (user, i) {
     let container = document.createElement("div")
     let avatar = document.createElement("div")
     let username = document.createElement("h2")
@@ -898,10 +898,56 @@ function loadMembers(memb) {
     container.appendChild(avatar)
     container.appendChild(username)
     container.id = user.user.id
-    // if(!document.getElementById("member-list").getElementById("role-" + user.hoistRole.id)) {
-    //   document.getElementById("member-list")
-    // }
-    document.getElementById("member-list").appendChild(container)
+    if (user.hoistRole) {
+      if (!roles[user.hoistRole.id]) {
+        roles[user.hoistRole.id] = [{
+          name: user.displayName.toUpperCase(),
+          container
+        }]
+      } else {
+        roles[user.hoistRole.id].push({
+          name: user.displayName.toUpperCase(),
+          container
+        })
+      }
+    } else {
+      if (!roles[guild.id]) {
+        roles[guild.id] = [{
+          name: user.displayName.toUpperCase(),
+          container
+        }]
+      } else {
+        roles[guild.id].push({
+          name: user.displayName.toUpperCase(),
+          container
+        })
+      }
+    }
+    if (i + 1 >= mem.length) {
+      Object.keys(roles).sort(function (a, b) {
+        return guild.roles.get(a).position - guild.roles.get(b).position
+      }).reverse().forEach(function (roleID) {
+        let role = guild.roles.get(roleID)
+        let rolehoist = document.createElement("div")
+        rolehoist.classList = "role-section"
+        let rolename = document.createElement("div")
+        rolename.classList = "role-name"
+        rolename.innerText = role.name
+        let rolemembers = document.createElement("div")
+        rolemembers.id = "role-" + role.id
+        rolehoist.appendChild(rolename)
+        roles[roleID].sort(function(a, b) {
+          return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0
+        })
+        roles[roleID].forEach(function(usr, x) {
+          rolemembers.appendChild(usr.container)
+          if(x + 1 == roles[roleID].length) {
+            rolehoist.appendChild(rolemembers)
+            document.getElementById("member-list").appendChild(rolehoist)
+          }
+        })
+      })
+    }
   })
 }
 
