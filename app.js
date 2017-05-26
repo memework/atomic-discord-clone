@@ -5,7 +5,8 @@ let mainWindow
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
     height: 600,
-    width: 1000
+    width: 1000,
+    darkTheme: true // Make it look nice on some GTK desktops until we get rid of that ugly taskbar ;)
   })
 
   mainWindow.loadURL("file://" + __dirname + "/web/serverview.html")

@@ -10,7 +10,6 @@ let litecordRevision = "N/A"
 let chalk
 let Speaker
 let Mic
-let Discord
 let streamify
 let conzole = console // Hack to fool ESLint
 let logger = {
@@ -41,7 +40,7 @@ let logger = {
   }
 }
 if (IsNode) {
-  Discord = require("discord.js")
+  window.Discord = require("discord.js")
   Speaker = require("speaker")
   chalk = require("chalk")
   notifier = require("node-notifier")
@@ -629,7 +628,7 @@ $(document).ready(function () {
     }
   })
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
-  window.bot = bot = new Discord.Client({
+  window.bot = bot = new window.Discord.Client({
     http: {
       host: endpoint,
       cdn
@@ -701,7 +700,7 @@ $(document).ready(function () {
         ChannelChange(messageInput.value.split(" ")[1])
         return
       }
-      bot.channels.get(window.channelID).send(sanitizeHTML(messageInput.textContent))
+      bot.channels.get(window.channelID).send($("<pre>").html(messageInput.innerText).text())
       $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("")
     }
   })
