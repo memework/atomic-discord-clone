@@ -163,10 +163,10 @@ function sanitizeHTML(content) {
 function createEmbed(embed) {
   logger.debug("Creating embed")
   if (embed.type == "image") {
-    let link = embed.thumbnail.proxy_url
+    let link = embed.thumbnail.proxyURL
     logger.debug("Adding " + link + " as an image...")
     let imgnode = document.createElement("img")
-    imgnode.src = embed.thumbnail.proxy_url
+    imgnode.src = embed.thumbnail.proxyURL
     imgnode.setAttribute("original-url", embed.thumbnail.url)
     imgnode.onload = function () {
       imgnode.style.background = "none"
@@ -178,7 +178,7 @@ function createEmbed(embed) {
     return { type: "image", image: imgnode }
   }
   if (embed.type == "gifv") {
-    let link = embed.thumbnail.proxy_url
+    let link = embed.thumbnail.proxyURL
     logger.debug("Adding " + link + " as an image...")
     let vidnode = document.createElement("video")
     let sourcenode = document.createElement("source")
@@ -445,7 +445,7 @@ function addMessageToDOM(msg, complete) {
   logger.debug(attachments)
   for (let att in attachments) {
     let imgnode = document.createElement("img")
-    imgnode.src = attachments[att].proxy_url
+    imgnode.src = attachments[att].proxyURL
     imgnode.onload = function () {
       imgnode.style.background = "none"
     }
