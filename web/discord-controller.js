@@ -10,7 +10,6 @@ let litecordRevision = "N/A"
 let chalk
 let Speaker
 let Mic
-let streamify
 let conzole = console // Hack to fool ESLint
 let logger = {
   log: function (msg) {
@@ -49,7 +48,6 @@ if (IsNode) {
   fs = require("fs")
   path = require("path")
   Mic = require("node-microphone")
-  streamify = require("streamifier")
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
@@ -118,17 +116,17 @@ function loadPlugins(dir, callback) {
       for (let hk in pl.hooks) {
         let hook = pl.hooks[hk]
         switch (hook.trigger) {
-        case "load": {
+          case "load": {
             hook.run(bot)
             break
           }
-        case "documentload": {
+          case "documentload": {
             $(document).ready(function () {
               hook.run(document)
             })
             break
           }
-        default: { // We'll add more hooks soon™ but for now, this seems useful
+          default: { // We'll add more hooks soon™ but for now, this seems useful
             bot.on(hook.trigger, hook.run)
           }
         }
@@ -596,9 +594,13 @@ function BotListeners() {
 function voice(voiceChannelID) {
   if (!IsNode) return logger.warn("This is only supported on the desktop version!")
   let chan = bot.channels.get(voiceChannelID)
+  leaveVoice()
   chan.join().then(function (connection) {
     let receiver = connection.createReceiver()
-
+    chan.members.forEach(function(user) {
+      // We create a connection for every user in case they had been speaking before we joined
+      receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
+    })
     connection.on("speaking", function (user, speaking) {
       if (!speaking) return
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
@@ -609,9 +611,26 @@ function voice(voiceChannelID) {
       rate: "48000",
       channels: "2"
     })
+    window.micInstance = mic
     let micstream = mic.startRecording()
     connection.playConvertedStream(micstream)
   }).catch(logger.warn)
+}
+
+/**
+ * Leaves all connected voice channels (if applicable) and destroys their attached microphones
+ * 
+ * @function
+ */
+function leaveVoice() {
+  if (!IsNode) return logger.warn("This is only supported on the desktop version!")
+  if (window.micInstance) {
+    window.micInstance.stopRecording()
+    window.micInstance = null
+  }
+  bot.voiceConnections.forEach(function (conn) {
+    conn.disconnect()
+  })
 }
 
 $(document).ready(function () {
@@ -713,7 +732,7 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
-      case "invite": {
+        case "invite": {
           bot.channels.get(options.$trigger[0].id).createInvite({
             temporary: false,
             max_users: 0,
@@ -735,21 +754,21 @@ $(document).ready(function () {
     selector: ".member-list-member",
     callback: function (key, options) {
       switch (key) {
-      case "ban": {
+        case "ban": {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
             logger.debug("User banned")
             loadMembers()
           }).catch(logger.warn)
           break
         }
-      case "kick": {
+        case "kick": {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
             logger.debug("User kicked")
             loadMembers()
           }).catch(logger.warn)
           break
         }
-      case "nickname": {
+        case "nickname": {
           $("#nickname-modal").modal()
           $("#change-nickname").click(function () {
             bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
@@ -774,7 +793,7 @@ $(document).ready(function () {
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-      case "copy": {
+        case "copy": {
           var range = document.createRange()
           range.selectNode(messageContent)
           window.getSelection().addRange(range)
@@ -788,13 +807,13 @@ $(document).ready(function () {
           logger.log("Copy")
           break
         }
-      case "delete": {
+        case "delete": {
           bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
             logger.debug("Deleted message " + messageId)
           }).catch(logger.warn)
           break
         }
-      case "edit": {
+        case "edit": {
           $(messageContent).attr("contenteditable", "true")
           $(messageContent).focus()
           $(messageContent).on("keydown", function (e) {
@@ -1019,10 +1038,23 @@ function loadChannels(chan) {
     let channelnode = document.createElement("div")
     channelnode.href = "#"
     channelnode.classList = "channel-btn"
-    channelnode.appendChild(document.createTextNode("#" + channel.name))
+    channelnode.innerText = "#" + channel.name
     channelnode.id = channel.id
     channelnode.onclick = function () {
       ChannelChange(channel.id, true)
+    }
+    document.getElementById("channel-container").appendChild(channelnode)
+  }
+  for (let chan in channels) {
+    let channel = channels[chan]
+    if (channel.type != "voice") continue
+    let channelnode = document.createElement("div")
+    channelnode.href = "#"
+    channelnode.classList = "channel-btn voice-channel-btn"
+    channelnode.innerText = channel.name
+    channelnode.id = channel.id
+    channelnode.onclick = function () {
+      voice(channel.id)
     }
     document.getElementById("channel-container").appendChild(channelnode)
   }
