@@ -8,6 +8,10 @@ let path
 let atomicRevision = "N/A"
 let litecordRevision = "N/A"
 let chalk
+let Speaker
+let Mic
+let Discord
+let streamify
 let conzole = console // Hack to fool ESLint
 let logger = {
   log: function (msg) {
@@ -37,12 +41,16 @@ let logger = {
   }
 }
 if (IsNode) {
+  Discord = require("discord.js")
+  Speaker = require("speaker")
   chalk = require("chalk")
   notifier = require("node-notifier")
   shell = require("electron").shell
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
   fs = require("fs")
   path = require("path")
+  Mic = require("node-microphone")
+  streamify = require("streamifier")
 }
 
 if (!window.localStorage.getItem("token")) window.location.href = "login.html"
@@ -111,17 +119,17 @@ function loadPlugins(dir, callback) {
       for (let hk in pl.hooks) {
         let hook = pl.hooks[hk]
         switch (hook.trigger) {
-          case "load": {
+        case "load": {
             hook.run(bot)
             break
           }
-          case "documentload": {
+        case "documentload": {
             $(document).ready(function () {
               hook.run(document)
             })
             break
           }
-          default: { // We'll add more hooks soon™ but for now, this seems useful
+        default: { // We'll add more hooks soon™ but for now, this seems useful
             bot.on(hook.trigger, hook.run)
           }
         }
@@ -580,6 +588,33 @@ function BotListeners() {
   })
 }
 
+/**
+ * Joins a voice channel, sends microphone data and plays other people's data to speaker
+ * 
+ * @function
+ * @param {String} voiceChannelID - The ID number of the voice channel to join
+ */
+function voice(voiceChannelID) {
+  if (!IsNode) return logger.warn("This is only supported on the desktop version!")
+  let chan = bot.channels.get(voiceChannelID)
+  chan.join().then(function (connection) {
+    let receiver = connection.createReceiver()
+
+    connection.on("speaking", function (user, speaking) {
+      if (!speaking) return
+      receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
+    })
+    let mic = new Mic({
+      bitwidth: "16",
+      encoding: "signed-integer",
+      rate: "48000",
+      channels: "2"
+    })
+    let micstream = mic.startRecording()
+    connection.playConvertedStream(micstream)
+  }).catch(logger.warn)
+}
+
 $(document).ready(function () {
   if (IsNode) {
     loadPlugins("atomic-plugins", function (err, plugins) {
@@ -600,6 +635,7 @@ $(document).ready(function () {
       cdn
     }
   })
+  bot.browser = IsNode
   bot.login(window.localStorage.getItem("token")).catch(function (err) {
     logger.error(err)
     window.location.href = "login.html"
@@ -678,7 +714,7 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
-        case "invite": {
+      case "invite": {
           bot.channels.get(options.$trigger[0].id).createInvite({
             temporary: false,
             max_users: 0,
@@ -700,21 +736,21 @@ $(document).ready(function () {
     selector: ".member-list-member",
     callback: function (key, options) {
       switch (key) {
-        case "ban": {
+      case "ban": {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
             logger.debug("User banned")
             loadMembers()
           }).catch(logger.warn)
           break
         }
-        case "kick": {
+      case "kick": {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
             logger.debug("User kicked")
             loadMembers()
           }).catch(logger.warn)
           break
         }
-        case "nickname": {
+      case "nickname": {
           $("#nickname-modal").modal()
           $("#change-nickname").click(function () {
             bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
@@ -739,7 +775,7 @@ $(document).ready(function () {
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-        case "copy": {
+      case "copy": {
           var range = document.createRange()
           range.selectNode(messageContent)
           window.getSelection().addRange(range)
@@ -753,13 +789,13 @@ $(document).ready(function () {
           logger.log("Copy")
           break
         }
-        case "delete": {
+      case "delete": {
           bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
             logger.debug("Deleted message " + messageId)
           }).catch(logger.warn)
           break
         }
-        case "edit": {
+      case "edit": {
           $(messageContent).attr("contenteditable", "true")
           $(messageContent).focus()
           $(messageContent).on("keydown", function (e) {
