@@ -285,7 +285,6 @@ function createLinksAndImages(content, images) {
     let link = arr[itm]
     logger.debug("Adding " + link + " to DOM")
     let anode = document.createElement("a")
-    logger.debug(link.match(new RegExp(inviteBase + "[A-Za-z0-9]*")))
     anode.href = "#"
     anode.setAttribute("data-link", link)
     anode.innerHTML = link
@@ -387,6 +386,7 @@ const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
  * @param {addMessageToDOMCallback} complete - Callback that handles the elements
  */
 function addMessageToDOM(msg, complete) {
+  if(!msg.guild.members.get(msg.author.id)) return
   let { embeds } = msg
   let message = msg.cleanContent // Just to make it a bit more readable while we have no mentions set up
   let channel = msg.channel.id
@@ -442,7 +442,6 @@ function addMessageToDOM(msg, complete) {
   })
 
   let attachments = msg.attachments.array()
-  logger.debug(attachments)
   for (let att in attachments) {
     let imgnode = document.createElement("img")
     imgnode.src = attachments[att].proxyURL
@@ -574,7 +573,7 @@ function BotListeners() {
   })
 
   bot.on("disconnect", function (err) {
-    logger.debug(err)
+    logger.warn(err)
     if (err == "Authentication Failed") return window.location.href = "login.html"
     $("#loading-line").html(window.loading_lines[Math.floor(Math.random() * window.loading_lines.length)])
     $("#loading-landing").css("display", "block")
@@ -885,6 +884,7 @@ function loadMembers(memb) {
     let avatar = document.createElement("div")
     let username = document.createElement("h2")
     let presence = document.createElement("div")
+    if(!user) return
     username.textContent = user.displayName
     avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL + "')"
     avatar.classList = "member-list-avatar"
