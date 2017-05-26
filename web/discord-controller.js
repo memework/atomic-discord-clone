@@ -853,7 +853,9 @@ function ChannelChange(channelID, silent) {
   window.localStorage.setItem("lastchannel", channelID)
   let channel = bot.channels.get(channelID)
   let server = channel.guild
-  document.title = `#${channel.name} in ${server.name} - ${channel.topic}`
+  let title = `#${channel.name} in ${server.name} - ${channel.topic}`
+  if(IsNode) document.getElementById("window-title").textContent = title
+  else document.title = title
   if (!silent) {
     let changemsg = document.createElement("div")
     changemsg.classList = "info-message"

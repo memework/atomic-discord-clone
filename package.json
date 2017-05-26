@@ -22,6 +22,7 @@
   "dependencies": {
     "chalk": "^1.1.3",
     "discord.js": "github:hydrabolt/discord.js#master",
+    "electron-titlebar": "0.0.3",
     "node-microphone": "^0.1.3",
     "node-notifier": "^5.1.2",
     "speaker": "^0.3.0"

@@ -6,7 +6,9 @@ app.on("ready", () => {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 1000,
-    darkTheme: true // Make it look nice on some GTK desktops until we get rid of that ugly taskbar ;)
+    frame: false,
+    autoHideMenuBar: true,
+    backgroundColor: "#2C2F33"
   })
 
   mainWindow.loadURL("file://" + __dirname + "/web/serverview.html")

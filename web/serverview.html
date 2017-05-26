@@ -2,6 +2,12 @@
 
 <head>
     <script>
+        if (process) {
+            require("electron-titlebar")
+            document.getElementsByTagName("html")[0].classList = "electron"
+        }
+    </script>
+    <script>
         if (typeof module === 'object') { window.module = module; module = undefined; }
     </script>
     <script src="loadinglines.js"></script>
@@ -202,50 +208,55 @@
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/yaml.min.js"></script>
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/languages/zephir.min.js"></script>
 </head>
-<div id="loading-landing">
-    <img src="loading.gif" alt="Loading indicator" id="loading-image">
-    <i id="loading-line">Loading Loading Lines</i>
-    <!-- We kind of copy discord and change this upon every showing ;D This message is super funny -->
-    <div id="connection-problems">Connection Problems? <a href="https://memework.org">Send a message our way!</a></div>
+<div id="electron-titlebar" class="drag" platform="win32">
+    <div id="window-title"></div>
 </div>
 
 <body>
-    <div id="server-list">
-        <!--Server icons and stuff go in here-->
-    </div>
-    <div id="channel-container">
-        <!--Channel buttons go in here-->
-    </div>
-    <div id="messages" class="messages">
-        <!--Put messages in here-->
-    </div>
-    <div class="message-input-wrap">
-        <input type="text" id="message-input" data-emojiable="true" class="message-input" />
-    </div>
-    <div id="right-bar">
-        <div id="member-list">
+    <div id="content">
+        <div id="loading-landing">
+            <img src="loading.gif" alt="Loading indicator" id="loading-image">
+            <i id="loading-line">Loading Loading Lines</i>
+            <!-- We kind of copy discord and change this upon every showing ;D This message is super funny -->
+            <div id="connection-problems">Connection Problems? <a href="https://memework.org">Send a message our way!</a></div>
         </div>
-        <label for="file-upload">Attach Files</label>
-        <label for="avatar-upload">Upload Avatar</label>
-        <input type="file" id="file-upload">
-        <input type="file" id="avatar-upload">
+        <div id="server-list">
+            <!--Server icons and stuff go in here-->
+        </div>
+        <div id="channel-container">
+            <!--Channel buttons go in here-->
+        </div>
+        <div id="messages" class="messages">
+            <!--Put messages in here-->
+        </div>
+        <div class="message-input-wrap">
+            <input type="text" id="message-input" data-emojiable="true" class="message-input" />
+        </div>
+        <div id="right-bar">
+            <div id="member-list">
+            </div>
+            <label for="file-upload">Attach Files</label>
+            <label for="avatar-upload">Upload Avatar</label>
+            <input type="file" id="file-upload">
+            <input type="file" id="avatar-upload">
+        </div>
+        <div id="new-server-modal" style="display:none;">
+            <label for="create-server">Server Name</label><br>
+            <input type="text" id="new-server-name" placeholder="Server Name"><br>
+            <button id="create-server" rel="modal:close">Create Server</button>
+        </div>
+        <div id="nickname-modal" style="display:none;">
+            <label for="nickname">Nickname</label><br>
+            <input type="text" id="nickname" placeholder="Nickname"><br>
+            <button id="change-nickname" rel="modal:close">Change Nickname</button>
+        </div>
+        <div id="display-invite-modal" style="display:none;">
+            <h2 class="lead">Invite people to <span id="server-name"></span></h2>
+            <span class="subheading">Sharing this link with others lets them join this server</span>
+            <span id="invite-text" class="selectable">N/A</span>
+        </div>
+        <div class="git-revision">A:N/A - L:N/A</div>
     </div>
-    <div id="new-server-modal" style="display:none;">
-        <label for="create-server">Server Name</label><br>
-        <input type="text" id="new-server-name" placeholder="Server Name"><br>
-        <button id="create-server" rel="modal:close">Create Server</button>
-    </div>
-    <div id="nickname-modal" style="display:none;">
-        <label for="nickname">Nickname</label><br>
-        <input type="text" id="nickname" placeholder="Nickname"><br>
-        <button id="change-nickname" rel="modal:close">Change Nickname</button>
-    </div>
-    <div id="display-invite-modal" style="display:none;">
-        <h2 class="lead">Invite people to <span id="server-name"></span></h2>
-        <span class="subheading">Sharing this link with others lets them join this server</span>
-        <span id="invite-text" class="selectable">N/A</span>
-    </div>
-    <div class="git-revision">A:N/A - L:N/A</div>
 </body>
 
 </html>

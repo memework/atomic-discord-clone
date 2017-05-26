@@ -9,9 +9,15 @@ html, body {
   background: #2C2F33 url(https://discordapp.com/assets/530280c4e76a27a6dd43c0ecabb96e7d.png) fixed;
   color: #FFF;
   padding-bottom: 1rem;
+  -webkit-app-region: drag;
+}
+
+#menubar button {
+  -webkit-app-region: no-drag;
 }
 
 #login-container {
+    -webkit-app-region: no-drag;
     background-color: #7289DA;
     border-radius: 7px;
     height: 45%;
@@ -23,6 +29,7 @@ html, body {
 }
 
 #login-banner {
+    -webkit-app-region: no-drag;
     margin-left: 20px;
     margin-top: 4%;
     margin-bottom: 4%;
@@ -85,6 +92,7 @@ span.tiny {
 }
 
 #login-form {
+    -webkit-app-region: no-drag;
     background-color: #23272A;
     border-bottom-right-radius: 7px;
     border-bottom-left-radius: 7px;

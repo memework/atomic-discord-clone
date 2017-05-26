@@ -10,6 +10,31 @@
   user-select: none;
 }
 
+#menubar {
+  -webkit-app-region: drag;
+}
+
+#menubar button {
+  -webkit-app-region: no-drag;
+}
+
+#content {
+  height: 100%;
+}
+
+.electron #content {
+  padding-top: 29px;
+}
+
+#electron-titlebar > .button img {
+  background-image: none;
+  -webkit-filter: invert(100%);
+}
+
+#electron-titlebar {
+  z-index: 9999;
+}
+
 .embed {
   padding-bottom: 1px;
   max-width: 65%;
@@ -84,6 +109,7 @@ a {
 }
 
 html, body {
+  overflow-y: hidden;
   background: #2C2F33;
   color: #EEE;
   padding-bottom: 1rem;
@@ -206,6 +232,10 @@ img.emoji {
   width: 200px;
   float: left;
   background-color: #303338;
+}
+
+.electron #channel-container {
+  height: calc(100% - 29px);
 }
 
 #right-bar {
@@ -435,6 +465,10 @@ time {
   background-color: #303338;
 }
 
+.electron #server-list {
+  height: calc(100% - 29px);
+}
+
 #server-list .server-icon {
   margin-top: 10px;
 }
@@ -470,6 +504,11 @@ body {
   bottom:0;
   left:0;
   right:0;
+  -webkit-app-region: drag;
+}
+
+#loading-landing * {
+  -webkit-app-region: drag;
 }
 
 #loading-image {
