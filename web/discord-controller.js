@@ -932,9 +932,9 @@ function loadMembers(memb) {
         rolehoist.classList = "role-section"
         let rolename = document.createElement("div")
         rolename.classList = "role-name"
-        rolename.innerText = role.name
+        rolename.innerText = role ? role.name : "undefined"
         let rolemembers = document.createElement("div")
-        rolemembers.id = "role-" + role.id
+        rolemembers.id = "role-" + roleID
         rolehoist.appendChild(rolename)
         roles[roleID].sort(function(a, b) {
           return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0
