@@ -19,9 +19,8 @@ git clone ssh://git@git.memework.org:2222/heatingdevice/atomic-discord.git
 cd atomic-discord
 
 # install dependencies
-npm i -g electron
-npm i
+npm i --only=dev
 
 # run the client
-electron app.js
+npm start
 ```

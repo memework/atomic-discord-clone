@@ -1,33 +1,36 @@
 {
   "name": "atomic-discord",
   "version": "1.0.0",
-  "description": "An alternative Discord client made in Atom! ",
+  "description": "An alternative Discord client made in Electron!",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docs": "jsdoc -c conf.json -t ./node_modules/ink-docstrap/template -R README.md -r web"
+    "docs": "jsdoc -c conf.json -t ./node_modules/ink-docstrap/template -R README.md -r web",
+    "install": "node_modules/.bin/electron-rebuild",
+    "start": "node_modules/.bin/electron app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/memework/atomic-discord.git"
+    "url": "git+https://git.memework.org/heatingdevice/atomic-discord.git"
   },
   "author": "heatingdevice",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/memework/atomic-discord/issues"
+    "url": "https://git.memework.org/heatingdevice/atomic-discord/issues"
   },
-  "homepage": "https://github.com/memework/atomic-discord#readme",
+  "homepage": "http://heatingdevice.memework.org/atomic-discord",
   "dependencies": {
     "chalk": "^1.1.3",
     "discord.js": "github:hydrabolt/discord.js#master",
-    "electron": "^1.6.2",
     "node-microphone": "^0.1.3",
     "node-notifier": "^5.1.2",
     "speaker": "^0.3.0"
   },
   "devDependencies": {
+    "electron-rebuild": "^1.5.11",
     "eslint": "^3.19.0",
     "ink-docstrap": "^1.3.0",
-    "jsdoc": "^3.4.3"
+    "jsdoc": "^3.4.3",
+    "electron": "^1.6.2"
   }
 }
