@@ -1,11 +1,11 @@
 const {app, BrowserWindow} = require("electron")
 
 let mainWindow
-
+require("electron-debug")({enabled: true})
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
-    height: 600,
-    width: 1000,
+    height: 800,
+    width: 1300,
     frame: false,
     autoHideMenuBar: true,
     backgroundColor: "#2C2F33"
@@ -16,5 +16,5 @@ app.on("ready", () => {
 
 app.on("browser-window-created", function(e, window) {
   window.setMenu(null)
-  window.webContents.openDevTools({detach:true}) // This will be gone in production
+  // window.webContents.openDevTools({detach:true}) // This will be gone in production
 })

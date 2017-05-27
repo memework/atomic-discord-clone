@@ -1,3 +1,5 @@
+atomic-plugins/*
+dist
 out
 # Logs
 logs

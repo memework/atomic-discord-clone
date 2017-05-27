@@ -1,6 +1,9 @@
 <html>
 
 <head>
+    <script>
+        if (process && process.platform != "linux") require("electron-titlebar")
+    </script>
     <title>Litecord &middot; Login</title>
     <link rel="stylesheet" href="login.css">
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
@@ -10,6 +13,8 @@
 </head>
 
 <body>
+    <div id="electron-titlebar" class="drag" platform="win32">
+    </div>
     <div id="login-container">
         <h2 id="login-banner">Sign in</h2> <!-- We dynamically change this depending on signup/login" -->
         <div id="login-form">
