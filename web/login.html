@@ -10,6 +10,8 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script>if (window.module) module = window.module;</script>
     <script src="logins.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.css">
 </head>
 
 <body>
@@ -18,7 +20,8 @@
     <div id="login-container">
         <h2 id="login-banner">Sign in</h2> <!-- We dynamically change this depending on signup/login" -->
         <div id="login-form">
-            <div id="already-logged-in-banner" style="display: none;"><b>Hold up!</b> You're already signed in! If you want to use your current session, you can <a href="serverview.html">launch Atomic now</a> otherwise, continue!</div>
+            <div class="banner banner-error" id="discord-login-warning" style="display: none;"><b>Hey!</b> Looks like you're trying to use Atomic with the official Discord servers! That's great, <b>BUT</b> Discord can sometimes <b>BAN YOUR ACCOUNT</b> if you request the login endpoints (That's bad!) While there's nothing we can do to stop you, we do recommend that you login with your token instead. (Note: We take <b>NO RESPONSIBILITY</b> for any damages to your account) If you're trying to use another server (Like <a href="https://git.memework.org/lnmds/litecord" target="_blank">Litecord</a>), You can change the endpoints <a href="#login-endpoints" class="login-endpoints-link">here</a></div>
+            <div class="banner" id="already-logged-in-banner" style="display: none;"><b>Hold up!</b> You're already signed in! If you want to use your current session, you can <a href="serverview.html">launch Atomic now</a> otherwise, continue!</div>
             <label style="display: none;" class="username">Username</label>
             <input type="text" id="username" class="username" style="display: none;"> <!-- We dynamically show/hide this and the label depending on whether it's signup or not -->
             <label>Email</label>
@@ -28,7 +31,21 @@
             <button class="login-or-signup-btn" id="login">Sign In</button><br> <!-- We dynamically change this to have the signup ID and text -->
             <span id="signup-text" class="tiny">Don't have an account? <a id="signup-link" href="#signup">Sign up!</a></span> <!-- Same here -->
             <span id="login-text" class="tiny" style="display: none;">Already have an account? <a id="login-link" href="#">Log in!</a></span> <!-- Same here -->
+            <br>
+            <label class="token" for="token">Token</label><br>
+            <input class="token" type="text" id="token">
+            <button class="token" id="token-login">Log in using token</button>
+            <span class="tiny"><a href="#login-endpoints" class="login-endpoints-link">Configure API Endpoints</a></span>
         </div>
+    </div>
+    <div id="endpoint-modal" style="display:none;">
+        <label for="endpoint-api">API Endpoint</label><br>
+        <input type="text" id="endpoint-api" placeholder="https://discordapp.com"><br>
+        <label for="endpoint-cdn">CDN Link</label><br>
+        <input type="text" id="endpoint-cdn" placeholder="https://cdn.discordapp.com"><br>
+        <label for="endpoint-invite">API Endpoint</label><br>
+        <input type="text" id="endpoint-invite" placeholder="https://discord.gg"><br>
+        <button id="settings-save" rel="modal:close">Save</button>
     </div>
 </body>
 

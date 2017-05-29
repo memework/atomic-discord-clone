@@ -27,7 +27,6 @@ html, body {
   -webkit-app-region: no-drag;
   background-color: #7289DA;
   border-radius: 7px;
-  height: 45%;
   width: 40%;
   position: absolute;
   top: 50%;
@@ -64,7 +63,7 @@ label {
   font-size: 0.9em;
 }
 
-#already-logged-in-banner {
+.banner {
   width: 85%;
   padding: 10px 10px;
   margin: 0 7.5%;
@@ -72,7 +71,30 @@ label {
   border-radius: 5px;
 }
 
-#already-logged-in-banner * {
+.banner.banner-error {
+  background-color: rgb(208, 62, 61);
+}
+
+.modal button {
+  color: #FFF;
+}
+
+.modal label {
+  color: #000;
+}
+
+.modal input {
+  color: #000;
+  width: 100%;
+  border-bottom: 2px solid #BBB;
+}
+
+.modal button {
+  margin-top: 5px;
+  width: 100%;
+}
+
+.banner * {
   width: auto !important;
   margin: auto !important;
 }
@@ -111,8 +133,7 @@ span.tiny {
   border-bottom-right-radius: 7px;
   border-bottom-left-radius: 7px;
   padding-top: 5%;
-  height: 100%;
-  padding-bottom: 400px;
+  padding-bottom: 10px;
 }
 
 #electron-titlebar > .button img {
