@@ -459,7 +459,7 @@ function addMessageToDOM(msg, complete) {
     let link = this.getAttribute("data-link")
     if (link.match(new RegExp(inviteBase + "[A-Za-z0-9]*")) == link) {
       logger.debug("Clicked gg link")
-      bot.acceptInvite(link.replace(inviteBase, "")).then(function (guild) {
+      bot.user.acceptInvite(link.replace(inviteBase, "")).then(function (guild) {
         ChannelChange(guild.id)
         loadServers()
       }).catch(logger.warn)
