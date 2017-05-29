@@ -13,29 +13,24 @@ let Mic
 let conzole = console // Hack to fool ESLint
 let logger = {
   log: function (msg) {
-    let txt = `[ INFO ] ${msg}`
     if (IsNode) process.stdout.write("[ " + chalk.blue("INFO") + " ] " + chalk.blue(msg) + "\n")
-    conzole.log(txt)
+    conzole.log(`[ INFO ] ${msg}`)
   },
   warn: function (msg) {
-    let txt = `[ WARN ] ${msg}`
     if (IsNode) process.stdout.write("[ " + chalk.yellow("WARN") + " ] " + chalk.yellow(msg) + "\n")
-    conzole.warn(txt)
+    conzole.warn(`[ WARN ] ${msg}`)
   },
   error: function (msg) {
-    let txt = `[ ERROR ] ${msg}`
     if (IsNode) process.stdout.write("[ " + chalk.red("ERROR") + " ] " + chalk.red(msg) + "\n")
-    conzole.error(txt)
+    conzole.error(`[ ERROR ] ${msg}`)
   },
   debug: function (msg) {
-    let txt = `[ DEBUG ] ${msg}`
     if (IsNode) process.stdout.write("[ " + chalk.grey("DEBUG") + " ] " + chalk.bgWhite(chalk.grey(msg)) + "\n")
-    conzole.log(txt)
+    conzole.log(`[ DEBUG ] ${msg}`)
   },
   ok: function (msg) {
-    let txt = `[ SUCCESS ] ${msg}`
     if (IsNode) process.stdout.write("[ " + chalk.green("SUCCESS") + " ] " + chalk.green(msg) + "\n")
-    conzole.log(txt)
+    conzole.log(`[ SUCCESS ] ${msg}`)
   }
 }
 if (IsNode) {
@@ -70,9 +65,6 @@ $.get("version.txt", function (result) {
   atomicRevision = result
   $(".git-revision").text("A:" + atomicRevision + " - L:" + litecordRevision)
 })
-
-// Uncomment this for first run... I just don't like having to change this every time :^)
-// window.localStorage.setItem("token", "CHANGE THIS PLES") // In production, this gets set by the login page
 
 /**
  * An optional callback used to handle the resulting plugins array
@@ -116,19 +108,19 @@ function loadPlugins(dir, callback) {
       for (let hk in pl.hooks) {
         let hook = pl.hooks[hk]
         switch (hook.trigger) {
-          case "load": {
-            hook.run(bot)
-            break
-          }
-          case "documentload": {
-            $(document).ready(function () {
-              hook.run(document)
-            })
-            break
-          }
-          default: { // We'll add more hooks soon™ but for now, this seems useful
-            bot.on(hook.trigger, hook.run)
-          }
+        case "load": {
+          hook.run(bot)
+          break
+        }
+        case "documentload": {
+          $(document).ready(function () {
+            hook.run(document)
+          })
+          break
+        }
+        default: { // We'll add more hooks soon™ but for now, this seems useful
+          bot.on(hook.trigger, hook.run)
+        }
         }
       }
       if (i + 1 >= plugins.length) {
@@ -457,9 +449,9 @@ function addMessageToDOM(msg, complete) {
 
   $(content).children("a").click(function () {
     let link = this.getAttribute("data-link")
-    if (link.match(new RegExp(inviteBase + "[A-Za-z0-9]*")) == link) {
+    if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*")) == link) {
       logger.debug("Clicked gg link")
-      bot.user.acceptInvite(link.replace(inviteBase, "")).then(function (guild) {
+      bot.user.acceptInvite(link.replace(inviteBase + "/", "")).then(function (guild) {
         ChannelChange(guild.id)
         loadServers()
       }).catch(logger.warn)
@@ -588,6 +580,7 @@ function BotListeners() {
  * 
  * @function
  * @param {String} voiceChannelID - The ID number of the voice channel to join
+ * @todo Possibly add browser support (Not likely since we need native modules for node-opus in Discord.js)
  */
 function voice(voiceChannelID) {
   if (!IsNode) return logger.warn("This is only supported on the desktop version!")
@@ -730,18 +723,18 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
-        case "invite": {
-          bot.channels.get(options.$trigger[0].id).createInvite({
-            temporary: false,
-            max_users: 0,
-            max_age: 0
-          }).then(function (invite) {
+      case "invite": {
+        bot.channels.get(options.$trigger[0].id).createInvite({
+          temporary: false,
+          max_users: 0,
+          max_age: 0
+        }).then(function (invite) {
             $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
             $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
             $("#display-invite-modal").modal()
           }).catch(logger.warn)
-          break
-        }
+        break
+      }
       }
     },
     items: {
@@ -752,30 +745,30 @@ $(document).ready(function () {
     selector: ".member-list-member",
     callback: function (key, options) {
       switch (key) {
-        case "ban": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
-            logger.debug("User banned")
-            loadMembers()
-          }).catch(logger.warn)
-          break
-        }
-        case "kick": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
-            logger.debug("User kicked")
-            loadMembers()
-          }).catch(logger.warn)
-          break
-        }
-        case "nickname": {
-          $("#nickname-modal").modal()
-          $("#change-nickname").click(function () {
-            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
+      case "ban": {
+        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
+          logger.debug("User banned")
+          loadMembers()
+        }).catch(logger.warn)
+        break
+      }
+      case "kick": {
+        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
+          logger.debug("User kicked")
+          loadMembers()
+        }).catch(logger.warn)
+        break
+      }
+      case "nickname": {
+        $("#nickname-modal").modal()
+        $("#change-nickname").click(function () {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
               logger.debug("Set nickname")
               $.modal.close()
             }).catch(logger.warn)
-          })
-          break
-        }
+        })
+        break
+      }
       }
     },
     items: {
@@ -791,43 +784,43 @@ $(document).ready(function () {
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-        case "copy": {
-          var range = document.createRange()
-          range.selectNode(messageContent)
-          window.getSelection().addRange(range)
+      case "copy": {
+        var range = document.createRange()
+        range.selectNode(messageContent)
+        window.getSelection().addRange(range)
 
-          try {
-            document.execCommand("copy")
-          } catch (err) {
-            logger.warn(err)
-          }
-          window.getSelection().removeAllRanges()
-          logger.log("Copy")
-          break
+        try {
+          document.execCommand("copy")
+        } catch (err) {
+          logger.warn(err)
         }
-        case "delete": {
-          bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
-            logger.debug("Deleted message " + messageId)
-          }).catch(logger.warn)
-          break
-        }
-        case "edit": {
-          $(messageContent).attr("contenteditable", "true")
-          $(messageContent).focus()
-          $(messageContent).on("keydown", function (e) {
-            if (!e) e = window.event
-            var keyCode = e.keyCode || e.which
-            if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+        window.getSelection().removeAllRanges()
+        logger.log("Copy")
+        break
+      }
+      case "delete": {
+        bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
+          logger.debug("Deleted message " + messageId)
+        }).catch(logger.warn)
+        break
+      }
+      case "edit": {
+        $(messageContent).attr("contenteditable", "true")
+        $(messageContent).focus()
+        $(messageContent).on("keydown", function (e) {
+          if (!e) e = window.event
+          var keyCode = e.keyCode || e.which
+          if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
               e.preventDefault()
               bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
                 logger.debug("Edited message " + messageId)
               }).catch(logger.warn)
               $(messageContent).attr("contenteditable", "false")
             }
-          })
-          logger.log("Editing")
-          break
-        }
+        })
+        logger.log("Editing")
+        break
+      }
       }
     },
     items: {
