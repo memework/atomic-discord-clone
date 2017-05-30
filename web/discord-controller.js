@@ -452,6 +452,7 @@ function addMessageToDOM(msg, complete) {
     if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*")) == link) {
       logger.debug("Clicked gg link")
       bot.user.acceptInvite(link.replace(inviteBase + "/", "")).then(function (guild) {
+        logger.debug("Invite accepted")
         ChannelChange(guild.id)
         loadServers()
       }).catch(logger.warn)
@@ -869,7 +870,7 @@ function ChannelChange(channelID, silent) {
  * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
  */
 function loadMembers(memb) {
-  if (memb && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
+  if (memb && memb.guild && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
   document.getElementById("member-list").innerHTML = ""
   let guild = bot.channels.get(window.channelID).guild
   let mem = guild.members.array()
