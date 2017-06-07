@@ -651,6 +651,15 @@ $(document).ready(function () {
     window.location.href = "login.html"
   })
   BotListeners()
+  $("#create-channel").click(function() {
+    bot.channels.get(window.channelID).guild.createChannel(document.getElementById("new-channel-name").value).then(function(channel) {
+      ChannelChange(channel.id)
+      document.getElementById("new-channel-name").value = ""
+      $.modal.close()
+    }).catch(function(err) {
+      alert(err)
+    })
+  })
   $("#create-server").click(function () {
     bot.user.createGuild($("#new-server-name").val()).then(function (guild) {
       $.modal.close()
@@ -730,10 +739,10 @@ $(document).ready(function () {
           max_users: 0,
           max_age: 0
         }).then(function (invite) {
-            $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
-            $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
-            $("#display-invite-modal").modal()
-          }).catch(logger.warn)
+          $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
+          $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
+          $("#display-invite-modal").modal()
+        }).catch(logger.warn)
         break
       }
       }
@@ -764,9 +773,9 @@ $(document).ready(function () {
         $("#nickname-modal").modal()
         $("#change-nickname").click(function () {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
-              logger.debug("Set nickname")
-              $.modal.close()
-            }).catch(logger.warn)
+            logger.debug("Set nickname")
+            $.modal.close()
+          }).catch(logger.warn)
         })
         break
       }
@@ -812,12 +821,12 @@ $(document).ready(function () {
           if (!e) e = window.event
           var keyCode = e.keyCode || e.which
           if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
-              e.preventDefault()
-              bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
-                logger.debug("Edited message " + messageId)
-              }).catch(logger.warn)
-              $(messageContent).attr("contenteditable", "false")
-            }
+            e.preventDefault()
+            bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
+              logger.debug("Edited message " + messageId)
+            }).catch(logger.warn)
+            $(messageContent).attr("contenteditable", "false")
+          }
         })
         logger.log("Editing")
         break
@@ -860,7 +869,7 @@ function ChannelChange(channelID, silent) {
   document.getElementById("member-list").innerHTML = ""
   loadChannels()
   loadMessages()
-  loadMembers(0)
+  loadMembers()
 }
 
 /**
@@ -1074,6 +1083,13 @@ function loadChannels(chan) {
   channels = channels.sort(function (a, b) {
     return a.position - b.position
   })
+  let link = document.createElement("a")
+  link.innerText = "+"
+  link.id = "new-channel"
+  link.onclick = function() {
+    $("#new-channel-modal").modal()
+  }
+  document.getElementById("channel-container").appendChild(link)
   for (let srv in channels) {
     let channel = channels[srv]
     if (channel.type != "text") continue // We don't do voice channels atm... OR VIDEO CHANNELS DISCORD VIDEO SUPPORT COMING SOON™ CONFIRMED!!!1!!!!!
@@ -1087,6 +1103,7 @@ function loadChannels(chan) {
     }
     document.getElementById("channel-container").appendChild(channelnode)
   }
+  document.getElementById("channel-container").appendChild(document.createElement("hr"))
   for (let chan in channels) {
     let channel = channels[chan]
     if (channel.type != "voice") continue
