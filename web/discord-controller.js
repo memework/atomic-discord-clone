@@ -720,7 +720,7 @@ $(document).ready(function () {
         ChannelChange(messageInput.value.split(" ")[1])
         return
       }
-      bot.channels.get(window.channelID).send($("<pre>").html(messageInput.innerText).text())
+      bot.channels.get(window.channelID).send($("<pre>").html(messageInput.innerText.replace(/<br>/gi, "\n")).text())
       $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("")
     }
   })
