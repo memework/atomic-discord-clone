@@ -361,7 +361,6 @@ function parseMarkdown(content, maskedLinks) {
 }
 
 const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/gi
-const imgexp = /(http)?s?:?(\/\/[^"']*\.(?:png|jpg|jpeg|gif|png|svg))/gi
 
 /**
  * A callback used to handle the rendered HTML from addMessageToDOM
@@ -511,6 +510,16 @@ function BotListeners() {
       document.getElementById("messages").appendChild(container)
 
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10 // Scroll to bottom of page
+    })
+  })
+
+  bot.on("voiceStateUpdate", function(oldmember, newmember) {
+    if(newmember.guild.id != bot.channels.get(window.channelID).guild.id) return
+    newmember.guild.channels.forEach(function(chan) {
+      if(chan.type != "voice") return
+      loadVoiceMembers(chan.id, document.getElementById("voice-list-" + chan.id), function(newnode) {
+        document.getElementById(chan.id).replaceChild(newnode, document.getElementById("voice-list-" + chan.id))
+      })
     })
   })
 
@@ -1115,6 +1124,54 @@ function loadChannels(chan) {
     channelnode.onclick = function () {
       voice(channel.id)
     }
+    let membersnode = document.createElement("div")
+    membersnode.class = "voice-list"
+    membersnode.id = "voice-list-" + channel.id
+    loadVoiceMembers(channel.id, membersnode, function(newnode) {
+      channelnode.appendChild(newnode)
+    })
     document.getElementById("channel-container").appendChild(channelnode)
   }
+}
+
+/**
+ * An optional callback used to handle the resulting plugins array
+ * 
+ * @callback addMessageToDOMCallback
+ * @param {String|Error} error - An error object
+ * @param {Array} plugins - Array containing all the plugins
+ */
+
+/**
+ * Loads the users in a voice channel
+ * 
+ * @function
+ * @param {String} channelID - ID of voice channel the node is to be attached to
+ * @param {DOMElement} container - A DOM element to be populated.
+ * @param {loadVoiceMembersCallback} cb - A callback with the node provided populated with members
+ */
+function loadVoiceMembers(channelID, container, cb) {
+  container.innerHTML = ""
+  let chan = bot.channels.get(channelID)
+  if(chan.members.size < 1) return cb(container)
+  chan.members.forEach(function(member, indx) {
+    let memnode = document.createElement("div")
+    memnode.id = member.id
+    memnode.classList = "voice-user" + (member.deaf ? " voice-deaf" : "") + (member.mute ? " voice-mute" : "") + (member.speaking ? " voice-speaking" : "")
+    let avatar = document.createElement("div")
+    avatar.classList = "voice-avatar"
+    avatar.style.backgroundImage = `url('${member.user.displayAvatarURL}')`
+    memnode.appendChild(avatar)
+    let username = document.createElement("h2")
+    username.classList = "voice-username"
+    $(username).text(member.displayName)
+    memnode.appendChild(username)
+    let statusicons = document.createElement("i")
+    statusicons.classList = "status-icons"
+    memnode.appendChild(statusicons)
+    container.appendChild(memnode)
+    if(indx + 1 >= chan.members.size) {
+      cb(container)
+    }
+  })
 }
