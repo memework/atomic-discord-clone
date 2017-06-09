@@ -1,14 +1,6 @@
-@font-face{
-  font-family: 'FontAwesome';
-  src: url('../fonts/fontawesome-webfont.eot?v=4.7.0');
-  src: url('../fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'), url('../fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'), url('../fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'), url('../fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'), url('../fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
-  font-weight: normal;
-  font-style: normal
-}
-
 * {
   box-sizing: border-box;
-  font-family: 'Arimo', sans-serif;
+  font-family: "Arimo", sans-serif;
   -moz-user-select: -moz-none;
   -moz-user-select: none;
   -o-user-select: none;
@@ -37,6 +29,7 @@
 #electron-titlebar > .button img {
   background-image: none;
   -webkit-filter: invert(100%);
+  filter: invert(100%);
 }
 
 #electron-titlebar {
@@ -56,10 +49,6 @@
 }
 
 .embed img {
-  /*margin: 10px 0 10px 2px;*/
-}
-
-.embed img {
   border-radius: 5px;
 }
 
@@ -67,7 +56,6 @@
   width: auto;
   display: inline;
   font-size: 1.2em;
-  /*padding-bottom: 5px;*/
   font-weight: 800;
 }
 
@@ -77,8 +65,6 @@
   max-width: 15%;
   float: right;
   display: block;
-  /*top: 0;*/
-  /*position: absolute;*/
 }
 
 .embed .embed-image {
@@ -194,16 +180,16 @@ body {
   border-radius: 0.15rem;
   padding: 0.2rem;
 
-  white-space: pre-wrap;       /* Since CSS 2.1 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }
 
 img {
   display: block;
-  background-image: url(http://i.imgur.com/8YsAmq3.gif);
+  background-image: url(http://i.imgur.com/8YsAmq3.gif); /* TODO: Selfhost this or a similar loading image instead of spamming imgur */
   background-position: center center;
 }
 
@@ -220,12 +206,12 @@ img.emoji {
   margin-left: 50px;
 }
 
-.voice-user {
-  /**/
+.voice-user.voice-speaking .voice-avatar {
+  border: 2px solid #35bb38;
 }
 
-.voice-user.voice-speaking .voice-avatar {
-  border: 5px solid #35bb38;
+.voice-user {
+  height: 25px;
 }
 
 .voice-user .voice-avatar {
@@ -244,6 +230,7 @@ img.emoji {
 }
 
 .voice-user .voice-username {
+  display: inline;
   font-size: 0.75em;
 }
 
@@ -587,6 +574,5 @@ body {
   position: fixed;
   top: 65%;
   left: 50%;
-  /* bring your own prefixes */
   transform: translate(-50%, -50%);
 }

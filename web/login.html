@@ -2,7 +2,7 @@
 
 <head>
     <script>
-        if (process && process.platform != "linux") require("electron-titlebar")
+        if (process && window.localStorage.getItem("show-titlebar") != "false") require("electron-titlebar")
     </script>
     <title>Litecord &middot; Login</title>
     <link rel="stylesheet" href="login.css">

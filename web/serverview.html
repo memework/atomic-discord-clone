@@ -2,7 +2,7 @@
 
 <head>
     <script>
-        if (process && process.platform != "linux") {
+        if (process && window.localStorage.getItem("show-titlebar") != "false") {
             require("electron-titlebar")
             document.getElementsByTagName("html")[0].classList = "electron"
         }
@@ -224,6 +224,9 @@
             <!--Server icons and stuff go in here-->
         </div>
         <div id="channel-container">
+            <div id="text-channels"></div>
+            <hr>
+            <div id="voice-channels"></div>
             <!--Channel buttons go in here-->
         </div>
         <div id="messages" class="messages">

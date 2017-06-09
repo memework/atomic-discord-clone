@@ -108,19 +108,19 @@ function loadPlugins(dir, callback) {
       for (let hk in pl.hooks) {
         let hook = pl.hooks[hk]
         switch (hook.trigger) {
-        case "load": {
-          hook.run(bot)
-          break
-        }
-        case "documentload": {
-          $(document).ready(function () {
-            hook.run(document)
-          })
-          break
-        }
-        default: { // We'll add more hooks soon™ but for now, this seems useful
-          bot.on(hook.trigger, hook.run)
-        }
+          case "load": {
+            hook.run(bot)
+            break
+          }
+          case "documentload": {
+            $(document).ready(function () {
+              hook.run(document)
+            })
+            break
+          }
+          default: { // We'll add more hooks soon™ but for now, this seems useful
+            bot.on(hook.trigger, hook.run)
+          }
         }
       }
       if (i + 1 >= plugins.length) {
@@ -377,12 +377,13 @@ const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*
  * @param {addMessageToDOMCallback} complete - Callback that handles the elements
  */
 function addMessageToDOM(msg, complete) {
-  if(!msg.guild.members.get(msg.author.id)) return
+  if (!msg.guild.members.get(msg.author.id)) return
   let { embeds } = msg
   let message = msg.cleanContent // Just to make it a bit more readable while we have no mentions set up
   let channel = msg.channel.id
   if (window.channelID != msg.channel.id) return
-  document.getElementById("message-input").setAttribute("placeholder", "Message #" + channel.name || "")
+  let messageInput = document.getElementById("message-input")
+  messageInput.setAttribute("placeholder", "Message #" + channel.name || "")
   window.channelID = msg.channel.id
   // We got a new message
   let container = document.createElement("div")
@@ -507,18 +508,20 @@ function BotListeners() {
       if (msg.author.id == bot.user.id) container.classList += " my-message"
       msgobj.classList = "message-inner"
       container.appendChild(msgobj)
-      document.getElementById("messages").appendChild(container)
+      let messages = document.getElementById("messages")
+      messages.appendChild(container)
 
-      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight + 10 // Scroll to bottom of page
+      messages.scrollTop = messages.scrollHeight + 10 // Scroll to bottom of page
     })
   })
 
-  bot.on("voiceStateUpdate", function(oldmember, newmember) {
-    if(newmember.guild.id != bot.channels.get(window.channelID).guild.id) return
-    newmember.guild.channels.forEach(function(chan) {
-      if(chan.type != "voice") return
-      loadVoiceMembers(chan.id, document.getElementById("voice-list-" + chan.id), function(newnode) {
-        document.getElementById(chan.id).replaceChild(newnode, document.getElementById("voice-list-" + chan.id))
+  bot.on("voiceStateUpdate", function (oldmember, newmember) {
+    if (newmember.guild.id != bot.channels.get(window.channelID).guild.id) return
+    newmember.guild.channels.forEach(function (chan) {
+      if (chan.type != "voice") return
+      let voiceList = document.getElementById("voice-list-" + chan.id)
+      loadVoiceMembers(chan.id, voiceList, function (newnode) {
+        document.getElementById(chan.id).replaceChild(newnode, voiceList)
       })
     })
   })
@@ -599,12 +602,18 @@ function voice(voiceChannelID) {
   chan.join().then(function (connection) {
     let receiver = connection.createReceiver()
     chan.members.forEach(function (user) {
+      let speaking = user.speaking
+      if(!speaking) return
       // We create a connection for every user in case they had been speaking before we joined
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
+      let usernode = document.getElementById(user.id)
+      usernode.classList = usernode.classList + " voice-speaking"
     })
     connection.on("speaking", function (user, speaking) {
-      if (!speaking) return
+      let usernode = document.getElementById(user.id)
+      if (!speaking) return usernode.classList = usernode.classList.value.replace(/( |)voice-speaking/g, "")
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
+      usernode.classList = usernode.classList + " voice-speaking"
     })
     let mic = new Mic({
       bitwidth: "16",
@@ -660,12 +669,13 @@ $(document).ready(function () {
     window.location.href = "login.html"
   })
   BotListeners()
-  $("#create-channel").click(function() {
-    bot.channels.get(window.channelID).guild.createChannel(document.getElementById("new-channel-name").value).then(function(channel) {
+  $("#create-channel").click(function () {
+    let newChannelName = document.getElementById("new-channel-name")
+    bot.channels.get(window.channelID).guild.createChannel(newChannelName.value).then(function (channel) {
       ChannelChange(channel.id)
-      document.getElementById("new-channel-name").value = ""
+      newChannelName.value = ""
       $.modal.close()
-    }).catch(function(err) {
+    }).catch(function (err) {
       alert(err)
     })
   })
@@ -693,7 +703,7 @@ $(document).ready(function () {
   document.getElementById("avatar-upload").onchange = function (ev) {
     let fr = new FileReader()
     fr.onload = function () {
-      let base64 = this.result.replace(/data:.*,/, "")
+      let base64 = this.result
       bot.user.setAvatar(base64).then(function () {
         logger.debug("Set avatar")
       }).catch(logger.warn)
@@ -742,18 +752,18 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
-      case "invite": {
-        bot.channels.get(options.$trigger[0].id).createInvite({
-          temporary: false,
-          max_users: 0,
-          max_age: 0
-        }).then(function (invite) {
-          $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
-          $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
-          $("#display-invite-modal").modal()
-        }).catch(logger.warn)
-        break
-      }
+        case "invite": {
+          bot.channels.get(options.$trigger[0].id).createInvite({
+            temporary: false,
+            max_users: 0,
+            max_age: 0
+          }).then(function (invite) {
+            $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
+            $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
+            $("#display-invite-modal").modal()
+          }).catch(logger.warn)
+          break
+        }
       }
     },
     items: {
@@ -764,30 +774,30 @@ $(document).ready(function () {
     selector: ".member-list-member",
     callback: function (key, options) {
       switch (key) {
-      case "ban": {
-        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
-          logger.debug("User banned")
-          loadMembers()
-        }).catch(logger.warn)
-        break
-      }
-      case "kick": {
-        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
-          logger.debug("User kicked")
-          loadMembers()
-        }).catch(logger.warn)
-        break
-      }
-      case "nickname": {
-        $("#nickname-modal").modal()
-        $("#change-nickname").click(function () {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
-            logger.debug("Set nickname")
-            $.modal.close()
+        case "ban": {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
+            logger.debug("User banned")
+            loadMembers()
           }).catch(logger.warn)
-        })
-        break
-      }
+          break
+        }
+        case "kick": {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
+            logger.debug("User kicked")
+            loadMembers()
+          }).catch(logger.warn)
+          break
+        }
+        case "nickname": {
+          $("#nickname-modal").modal()
+          $("#change-nickname").click(function () {
+            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
+              logger.debug("Set nickname")
+              $.modal.close()
+            }).catch(logger.warn)
+          })
+          break
+        }
       }
     },
     items: {
@@ -803,43 +813,43 @@ $(document).ready(function () {
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-      case "copy": {
-        var range = document.createRange()
-        range.selectNode(messageContent)
-        window.getSelection().addRange(range)
+        case "copy": {
+          var range = document.createRange()
+          range.selectNode(messageContent)
+          window.getSelection().addRange(range)
 
-        try {
-          document.execCommand("copy")
-        } catch (err) {
-          logger.warn(err)
-        }
-        window.getSelection().removeAllRanges()
-        logger.log("Copy")
-        break
-      }
-      case "delete": {
-        bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
-          logger.debug("Deleted message " + messageId)
-        }).catch(logger.warn)
-        break
-      }
-      case "edit": {
-        $(messageContent).attr("contenteditable", "true")
-        $(messageContent).focus()
-        $(messageContent).on("keydown", function (e) {
-          if (!e) e = window.event
-          var keyCode = e.keyCode || e.which
-          if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
-            e.preventDefault()
-            bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
-              logger.debug("Edited message " + messageId)
-            }).catch(logger.warn)
-            $(messageContent).attr("contenteditable", "false")
+          try {
+            document.execCommand("copy")
+          } catch (err) {
+            logger.warn(err)
           }
-        })
-        logger.log("Editing")
-        break
-      }
+          window.getSelection().removeAllRanges()
+          logger.log("Copy")
+          break
+        }
+        case "delete": {
+          bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
+            logger.debug("Deleted message " + messageId)
+          }).catch(logger.warn)
+          break
+        }
+        case "edit": {
+          $(messageContent).attr("contenteditable", "true")
+          $(messageContent).focus()
+          $(messageContent).on("keydown", function (e) {
+            if (!e) e = window.event
+            var keyCode = e.keyCode || e.which
+            if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+              e.preventDefault()
+              bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
+                logger.debug("Edited message " + messageId)
+              }).catch(logger.warn)
+              $(messageContent).attr("contenteditable", "false")
+            }
+          })
+          logger.log("Editing")
+          break
+        }
       }
     },
     items: {
@@ -866,7 +876,7 @@ function ChannelChange(channelID, silent) {
   let channel = bot.channels.get(channelID)
   let server = channel.guild
   let title = `#${channel.name} in ${server.name} - ${channel.topic}`
-  if(IsNode) document.getElementById("window-title").textContent = title
+  if (IsNode) document.getElementById("window-title").textContent = title
   else document.title = title
   if (!silent) {
     let changemsg = document.createElement("div")
@@ -875,7 +885,6 @@ function ChannelChange(channelID, silent) {
     document.getElementById("messages").appendChild(changemsg)
   }
   window.channelID = channelID
-  document.getElementById("member-list").innerHTML = ""
   loadChannels()
   loadMessages()
   loadMembers()
@@ -889,7 +898,8 @@ function ChannelChange(channelID, silent) {
  */
 function loadMembers(memb) {
   if (memb && memb.guild && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
-  document.getElementById("member-list").innerHTML = ""
+  let memberList = document.getElementById("member-list")
+  memberList.innerHTML = ""
   let guild = bot.channels.get(window.channelID).guild
   let mem = guild.members.array()
   let roles = {}
@@ -898,7 +908,7 @@ function loadMembers(memb) {
     let avatar = document.createElement("div")
     let username = document.createElement("h2")
     let presence = document.createElement("div")
-    if(!user) return
+    if (!user) return
     username.textContent = user.displayName
     avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL + "')"
     avatar.classList = "member-list-avatar"
@@ -950,14 +960,14 @@ function loadMembers(memb) {
         let rolemembers = document.createElement("div")
         rolemembers.id = "role-" + roleID
         rolehoist.appendChild(rolename)
-        roles[roleID].sort(function(a, b) {
+        roles[roleID].sort(function (a, b) {
           return (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0
         })
-        roles[roleID].forEach(function(usr, x) {
+        roles[roleID].forEach(function (usr, x) {
           rolemembers.appendChild(usr.container)
-          if(x + 1 == roles[roleID].length) {
+          if (x + 1 == roles[roleID].length) {
             rolehoist.appendChild(rolemembers)
-            document.getElementById("member-list").appendChild(rolehoist)
+            memberList.appendChild(rolehoist)
           }
         })
       })
@@ -973,13 +983,14 @@ function loadMembers(memb) {
  */
 function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   logger.debug("Grabbing messages")
+  let msgdom = document.getElementById("messages")
   let options = {
     limit: 100
   }
   if (window.currentMessages.channelID == window.channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.channels.get(window.channelID).fetchMessages(options).then(function (messages) {
     logger.debug("Got messages " + typeof messages + " : " + messages.length)
-    let oldScrollHeight = document.getElementById("messages").scrollHeight
+    let oldScrollHeight = msgdom.scrollHeight
     let scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
       messages.forEach(function (msg) {
@@ -993,20 +1004,19 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
       messages.forEach(function (msg) {
         window.currentMessages.arr.unshift(msg)
       })
-      document.getElementById("messages").innerHTML = ""
+      msgdom.innerHTML = ""
     }
 
     let len = messages.size
 
     if (len <= 0) {
       if (hideLoaderAfter) $("#loading-landing").css("display", "none")
-      if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight
-      else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight
+      if (scrolltobottom) msgdom.scrollTop = msgdom.scrollHeight - oldScrollHeight
+      else msgdom.scrollTop = msgdom.scrollHeight
       return
     }
 
     messages.forEach(function (curmsg, i) {
-      conzole.log(curmsg)
       if (!curmsg || !curmsg.author) return
       addMessageToDOM(curmsg, function (items) {
         let { avatar, content, images, msgobj, container } = items
@@ -1018,12 +1028,12 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
         if (curmsg.author.id == bot.user.id) container.classList += " my-message"
         msgobj.classList = "message-inner"
         container.appendChild(msgobj)
-        document.getElementById("messages").insertBefore(container, document.getElementById("messages").childNodes[0])
+        msgdom.insertBefore(container, msgdom.childNodes[0])
       })
       if (i + 1 >= len) {
         if (hideLoaderAfter) $("#loading-landing").css("display", "none")
-        if (scrolltobottom) document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight - oldScrollHeight
-        else document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight
+        if (scrolltobottom) msgdom.scrollTop = msgdom.scrollHeight - oldScrollHeight
+        else msgdom.scrollTop = msgdom.scrollHeight
       }
     })
   }).catch(logger.warn)
@@ -1035,7 +1045,8 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
  * @function
  */
 function loadServers() {
-  document.getElementById("server-list").innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
+  let serverList = document.getElementById("server-list")
+  serverList.innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
   let srvlist = bot.user.settings && bot.user.settings.guildPositions && bot.user.settings.guildPositions.length > 0 ? bot.user.settings.guildPositions : Array.from(bot.guilds.keys())
   srvlist.forEach(function (srv, i) {
     let server = bot.guilds.get(srv)
@@ -1057,7 +1068,7 @@ function loadServers() {
     servernode.onclick = function () {
       ChannelChange(server.id, true)
     }
-    document.getElementById("server-list").insertBefore(servernode, null)
+    serverList.insertBefore(servernode, null)
     if (i + 1 >= srvlist.length) {
       let addnode = document.createElement("a")
       addnode.href = "#"
@@ -1073,7 +1084,7 @@ function loadServers() {
       addnode.onclick = function () {
         $("#new-server-modal").modal()
       }
-      document.getElementById("server-list").appendChild(addnode, null)
+      serverList.appendChild(addnode, null)
     }
   })
 }
@@ -1086,60 +1097,55 @@ function loadServers() {
  */
 function loadChannels(chan) {
   if (chan && chan.guild.id != bot.channels.get(window.channelID).guild.id) return
-  document.getElementById("channel-container").innerHTML = ""
+  let textChannelContainer = document.getElementById("text-channels")
+  let voiceChannelContainer = document.getElementById("voice-channels")
+  textChannelContainer.innerHTML = ""
+  voiceChannelContainer.innerHTML = ""
   if (!bot.channels.get(window.channelID)) return
-  let channels = bot.channels.get(window.channelID).guild.channels.array()
+  let channels = bot.channels.get(window.channelID).guild.channels
   channels = channels.sort(function (a, b) {
     return a.position - b.position
   })
   let link = document.createElement("a")
   link.innerText = "+"
   link.id = "new-channel"
-  link.onclick = function() {
+  link.onclick = function () {
     $("#new-channel-modal").modal()
   }
-  document.getElementById("channel-container").appendChild(link)
-  for (let srv in channels) {
-    let channel = channels[srv]
-    if (channel.type != "text") continue // We don't do voice channels atm... OR VIDEO CHANNELS DISCORD VIDEO SUPPORT COMING SOON™ CONFIRMED!!!1!!!!!
+  textChannelContainer.appendChild(link)
+  channels.forEach(function (channel) {
     let channelnode = document.createElement("div")
     channelnode.href = "#"
-    channelnode.classList = "channel-btn"
-    channelnode.innerText = "#" + channel.name
     channelnode.id = channel.id
-    channelnode.onclick = function () {
-      ChannelChange(channel.id, true)
+    if (channel.type == "text") {
+      channelnode.classList = "channel-btn"
+      channelnode.innerText = "#" + channel.name
+      channelnode.onclick = function () {
+        ChannelChange(channel.id, true)
+      }
+      textChannelContainer.appendChild(channelnode)
+    } else {
+      channelnode.classList = "channel-btn voice-channel-btn"
+      channelnode.innerText = channel.name
+      channelnode.onclick = function () {
+        voice(channel.id)
+      }
+      let membersnode = document.createElement("div")
+      membersnode.class = "voice-list"
+      membersnode.id = "voice-list-" + channel.id
+      loadVoiceMembers(channel.id, membersnode, function (newnode) {
+        channelnode.appendChild(newnode)
+      })
+      voiceChannelContainer.appendChild(channelnode)
     }
-    document.getElementById("channel-container").appendChild(channelnode)
-  }
-  document.getElementById("channel-container").appendChild(document.createElement("hr"))
-  for (let chan in channels) {
-    let channel = channels[chan]
-    if (channel.type != "voice") continue
-    let channelnode = document.createElement("div")
-    channelnode.href = "#"
-    channelnode.classList = "channel-btn voice-channel-btn"
-    channelnode.innerText = channel.name
-    channelnode.id = channel.id
-    channelnode.onclick = function () {
-      voice(channel.id)
-    }
-    let membersnode = document.createElement("div")
-    membersnode.class = "voice-list"
-    membersnode.id = "voice-list-" + channel.id
-    loadVoiceMembers(channel.id, membersnode, function(newnode) {
-      channelnode.appendChild(newnode)
-    })
-    document.getElementById("channel-container").appendChild(channelnode)
-  }
+  })
 }
 
 /**
- * An optional callback used to handle the resulting plugins array
+ * An optional callback used to handle the resulting DOM node
  * 
- * @callback addMessageToDOMCallback
- * @param {String|Error} error - An error object
- * @param {Array} plugins - Array containing all the plugins
+ * @callback loadVoiceMembersCallback
+ * @param {DOMElement} container - The element from before, but populated with the members
  */
 
 /**
@@ -1153,8 +1159,8 @@ function loadChannels(chan) {
 function loadVoiceMembers(channelID, container, cb) {
   container.innerHTML = ""
   let chan = bot.channels.get(channelID)
-  if(chan.members.size < 1) return cb(container)
-  chan.members.forEach(function(member, indx) {
+  if (chan.members.size < 1) return cb(container)
+  chan.members.forEach(function (member, indx) {
     let memnode = document.createElement("div")
     memnode.id = member.id
     memnode.classList = "voice-user" + (member.deaf ? " voice-deaf" : "") + (member.mute ? " voice-mute" : "") + (member.speaking ? " voice-speaking" : "")
@@ -1170,7 +1176,7 @@ function loadVoiceMembers(channelID, container, cb) {
     statusicons.classList = "status-icons"
     memnode.appendChild(statusicons)
     container.appendChild(memnode)
-    if(indx + 1 >= chan.members.size) {
+    if (indx + 1 >= chan.members.size) {
       cb(container)
     }
   })
