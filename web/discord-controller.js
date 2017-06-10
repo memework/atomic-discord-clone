@@ -12,22 +12,53 @@ let Speaker
 let Mic
 let conzole = console // Hack to fool ESLint
 let logger = {
+  /**
+   * Logs a message as `info` to the browser console and (if running on electron) stdout
+   * 
+   * @function
+   * @param msg - Message to log
+   */
   log: function (msg) {
     if (IsNode) process.stdout.write("[ " + chalk.blue("INFO") + " ] " + chalk.blue(msg) + "\n")
     conzole.log(`[ INFO ] ${msg}`)
   },
+  /**
+   * Logs a warning to the browser console and (if running on electron) stdout
+   * 
+   * @function
+   * @param msg - Warning to log
+   */
   warn: function (msg) {
     if (IsNode) process.stdout.write("[ " + chalk.yellow("WARN") + " ] " + chalk.yellow(msg) + "\n")
     conzole.warn(`[ WARN ] ${msg}`)
   },
+  /**
+   * Logs an error to the browser console and (if running on electron) stdout.
+   * Note: Only use this for critical errors wherein the app cannot continue. Otherwise, use <logger.warn>
+   * 
+   * @function
+   * @param msg - Error to log
+   */
   error: function (msg) {
     if (IsNode) process.stdout.write("[ " + chalk.red("ERROR") + " ] " + chalk.red(msg) + "\n")
     conzole.error(`[ ERROR ] ${msg}`)
   },
+  /**
+   * Logs a debug information to the browser console and (if running on electron) stdout
+   * 
+   * @function
+   * @param msg - Message to log as debug
+   */
   debug: function (msg) {
     if (IsNode) process.stdout.write("[ " + chalk.grey("DEBUG") + " ] " + chalk.bgWhite(chalk.grey(msg)) + "\n")
     conzole.log(`[ DEBUG ] ${msg}`)
   },
+  /**
+   * Logs a success in a request / operation. I.e. for changing avatars
+   * 
+   * @function
+   * @param msg - Success to log
+   */
   ok: function (msg) {
     if (IsNode) process.stdout.write("[ " + chalk.green("SUCCESS") + " ] " + chalk.green(msg) + "\n")
     conzole.log(`[ SUCCESS ] ${msg}`)
@@ -136,6 +167,7 @@ window.plugins = []
 /**
  * Sanitizes any HTML input and returns html output
  * 
+ * @example sanitizeHTML("<h1>I am unclean content!</h1>\n Or just unmatched < signs") // Returns "&lt;h1&gt;I am unclean content!&lt;/h1&gt;<br> Or just unmatched &lt; signs"
  * @function
  * @param {String} content - Unclean text to santize
  * @returns {String} Sanitized HTML
@@ -179,9 +211,6 @@ function createEmbed(embed) {
     vidnode.loop = "loop"
     sourcenode.src = embed.video.url
     vidnode.appendChild(sourcenode)
-    // <video class="post" poster="//i.imgur.com/zG4xS3kh.jpg" preload="auto" autoplay="autoplay" muted="muted" loop="loop" webkit-playsinline="" style="width: 524px; height: 931.556px;">
-    //   <source src="//i.imgur.com/zG4xS3k.mp4" type="video/mp4">
-    // </video>
     vidnode.setAttribute("original-url", embed.thumbnail.url)
     return { type: "image", image: vidnode }
   }
@@ -731,6 +760,11 @@ $(document).ready(function () {
   })
   $(".twemoji-textarea").on("keydown", function (e) {
     if (!e) e = window.event
+    let chan = bot.channels.get(window.channelID)
+    chan.startTyping()
+    setTimeout(function() {
+      chan.stopTyping()
+    }, 1000 * 5)
     let messageInput = document.getElementById("message-input")
     var keyCode = e.keyCode || e.which
     if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
@@ -739,7 +773,7 @@ $(document).ready(function () {
         ChannelChange(messageInput.value.split(" ")[1])
         return
       }
-      bot.channels.get(window.channelID).send($("<pre>").html(messageInput.innerText.replace(/<br>/gi, "\n")).text())
+      chan.send($("<pre>").html(messageInput.innerText.replace(/<br>/gi, "\n")).text())
       $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("")
     }
   })
