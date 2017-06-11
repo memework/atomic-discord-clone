@@ -52,7 +52,7 @@ function login() {
 }
 
 function signup() {
-  $.post(APIBase + "/api/users/add", JSON.stringify({ email: document.getElementById("email").value, username: document.getElementById("username").value, password: document.getElementById("password").value }), function (result) {
+  $.post(APIBase + "/api/auth/users/add", JSON.stringify({ email: document.getElementById("email").value, username: document.getElementById("username").value, password: document.getElementById("password").value }), function (result) {
     if (typeof result == String) result = JSON.parse(result)
     if (result.code != 1 || result.message != "success") return alert("An error occurred while signing you up :( Error " + result.code + ": " + result.message)
     login()
