@@ -1,6 +1,4 @@
-const startTime = new Date()
 const IsNode = typeof process == "undefined" ? false : true
-let notifier
 let shell
 let bot
 let fs
@@ -10,11 +8,12 @@ let litecordRevision = "N/A"
 let chalk
 let Speaker
 let Mic
+let token = window.localStorage.getItem("token")
 let conzole = console // Hack to fool ESLint
 let logger = {
   /**
    * Logs a message as `info` to the browser console and (if running on electron) stdout
-   * 
+   *
    * @function
    * @param msg - Message to log
    */
@@ -24,7 +23,7 @@ let logger = {
   },
   /**
    * Logs a warning to the browser console and (if running on electron) stdout
-   * 
+   *
    * @function
    * @param msg - Warning to log
    */
@@ -35,7 +34,7 @@ let logger = {
   /**
    * Logs an error to the browser console and (if running on electron) stdout.
    * Note: Only use this for critical errors wherein the app cannot continue. Otherwise, use <logger.warn>
-   * 
+   *
    * @function
    * @param msg - Error to log
    */
@@ -45,7 +44,7 @@ let logger = {
   },
   /**
    * Logs a debug information to the browser console and (if running on electron) stdout
-   * 
+   *
    * @function
    * @param msg - Message to log as debug
    */
@@ -55,7 +54,7 @@ let logger = {
   },
   /**
    * Logs a success in a request / operation. I.e. for changing avatars
-   * 
+   *
    * @function
    * @param msg - Success to log
    */
@@ -68,7 +67,6 @@ if (IsNode) {
   window.Discord = require("discord.js")
   Speaker = require("speaker")
   chalk = require("chalk")
-  notifier = require("node-notifier")
   shell = require("electron").shell
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
   fs = require("fs")
@@ -99,7 +97,7 @@ $.get("version.txt", function (result) {
 
 /**
  * An optional callback used to handle the resulting plugins array
- * 
+ *
  * @callback addMessageToDOMCallback
  * @param {String|Error} error - An error object
  * @param {Array} plugins - Array containing all the plugins
@@ -107,7 +105,7 @@ $.get("version.txt", function (result) {
 
 /**
  * Loads any plugins in the given directory
- * 
+ *
  * @function
  * @param {String} dir - Path to search for plugins in
  * @param {loadPluginsCallback} callback - Optional callback
@@ -139,19 +137,19 @@ function loadPlugins(dir, callback) {
       for (let hk in pl.hooks) {
         let hook = pl.hooks[hk]
         switch (hook.trigger) {
-          case "load": {
-            hook.run(bot)
-            break
-          }
-          case "documentload": {
-            $(document).ready(function () {
-              hook.run(document)
-            })
-            break
-          }
-          default: { // We'll add more hooks soon™ but for now, this seems useful
-            bot.on(hook.trigger, hook.run)
-          }
+        case "load": {
+          hook.run(bot)
+          break
+        }
+        case "documentload": {
+          $(document).ready(function () {
+            hook.run(document)
+          })
+          break
+        }
+        default: { // We'll add more hooks soon™ but for now, this seems useful
+          bot.on(hook.trigger, hook.run)
+        }
         }
       }
       if (i + 1 >= plugins.length) {
@@ -166,7 +164,7 @@ window.plugins = []
 
 /**
  * Sanitizes any HTML input and returns html output
- * 
+ *
  * @example sanitizeHTML("<h1>I am unclean content!</h1>\n Or just unmatched < signs") // Returns "&lt;h1&gt;I am unclean content!&lt;/h1&gt;<br> Or just unmatched &lt; signs"
  * @function
  * @param {String} content - Unclean text to santize
@@ -178,7 +176,7 @@ function sanitizeHTML(content) {
 
 /**
  *  Renders a given embed object
- * 
+ *
  * @function
  * @param {Object} embed - JSON for an embed
  * @returns {Object} Object containing type which can be either image or embed depending on whether it should have the embed wrapper around it
@@ -262,7 +260,7 @@ function createEmbed(embed) {
 
 /**
  * Replaces Discord emotes within the text with images of the emote
- * 
+ *
  * @function
  * @param {DOMElement} content - A DOM object which whose content has been escaped
  * @returns {DOMElement} The same DOM object as before, but the Discord emotes have been replaced with their respective images
@@ -293,7 +291,7 @@ function parseDiscordEmotes(content) {
 
 /**
  * Converts occurances of textual links to a clickable link
- * 
+ *
  * @function
  * @param {DOMElement} content - DOM Element whose innerHTML is to be modified to have links
  * @param {DOMElement} images - Ignored in newer versions. Used to add images to the DOM but no longer does so
@@ -319,7 +317,7 @@ function createLinksAndImages(content, images) {
 
 /**
  * Renders markdown
- * 
+ *
  * @function
  * @param {DOMElement} content - DOM element whose innerHTML's markdown is to be rendered.
  * @param {Boolean} maskedLinks - Boolean to enable or disable masked links such as [Link name](URL). Defaults to false
@@ -393,14 +391,14 @@ const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*
 
 /**
  * A callback used to handle the rendered HTML from addMessageToDOM
- * 
+ *
  * @callback addMessageToDOMCallback
  * @param {Object} elements - Object containing all the DOM elements which are appened to each other. The keys are: `avatar`, `content`, `images`, `msgobj`, and `container`
  */
 
 /**
  * Renders a message to HTML
- * 
+ *
  * @function
  * @param {Message} msg - Discord.js Message object to be rendered
  * @param {addMessageToDOMCallback} complete - Callback that handles the elements
@@ -480,6 +478,9 @@ function addMessageToDOM(msg, complete) {
     let link = this.getAttribute("data-link")
     if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*")) == link) {
       logger.debug("Clicked gg link")
+      // snekfetch("POST", `${endpoint}/invite/${link.replace(inviteBase + "/", "")}`, {
+      //   Authorization: "Authorization: Bot " + token
+      // })
       bot.user.acceptInvite(link.replace(inviteBase + "/", "")).then(function (guild) {
         logger.debug("Invite accepted")
         ChannelChange(guild.id)
@@ -514,9 +515,33 @@ function addMessageToDOM(msg, complete) {
   })
 }
 
+let typingUsers = {}
+
+/**
+ * Loads the users currently typing from the typingUsers array
+ *
+ * @function
+*/
+function loadTypingUsers() {
+  // We would use Object.values(typingUsers)... but IE exists... Also, it's not defined exactly
+  // How it's supposed to work so different JS engines implement it differently
+  let typingArr = Object.keys(typingUsers).map(function(u) {
+    return typingUsers[u]
+  })
+  let len = typingArr.length
+  let text
+  if(len == 0) text = ""
+  else if(len == 1) text = typingArr[0]
+  else if(len == 2) text = typingArr[0] + " and " + typingArr[1]
+  else if(len == 3) text = typingArr[0] + ", " + typingArr[1] + ", and " + typingArr[2]
+  else text = "Several users"
+  let indicator = document.getElementById("typing-indicator")
+  indicator.innerText = text
+}
+
 /**
  * Attaches the necessary listeners to the `bot` object
- * 
+ *
  * @function
  */
 function BotListeners() {
@@ -542,6 +567,20 @@ function BotListeners() {
 
       messages.scrollTop = messages.scrollHeight + 10 // Scroll to bottom of page
     })
+  })
+
+  bot.on("typingStart", function(channel, user) {
+    if(channel.id != window.channelID) return
+    let guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
+    typingUsers[guildmember.id] = guildmember.displayName
+    loadTypingUsers()
+  })
+
+  bot.on("typingStop", function(channel, user) {
+    if(channel.id != window.channelID) return
+    let guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
+    delete typingUsers[guildmember.id]
+    loadTypingUsers()
   })
 
   bot.on("voiceStateUpdate", function (oldmember, newmember) {
@@ -592,8 +631,12 @@ function BotListeners() {
 
   bot.on("ready", function () {
     logger.ok("BOT CONNECTED")
-    window.channelID = window.localStorage.getItem("lastchannel") || bot.channels.first().id
-    if (!bot.channels.get(window.channelID)) window.channelID = bot.channels.first().id
+    window.channelID = window.localStorage.getItem("lastchannel") || bot.channels.filter(function(a) {
+      return a.type == "text"
+    }).first().id
+    if (!bot.channels.get(window.channelID)) window.channelID = bot.channels.filter(function(a) {
+      return a.type == "text"
+    }).first().id
 
     window.currentMessages = {
       channelID: window.channelID,
@@ -619,7 +662,7 @@ function BotListeners() {
 
 /**
  * Joins a voice channel, sends microphone data and plays other people's data to speaker
- * 
+ *
  * @function
  * @param {String} voiceChannelID - The ID number of the voice channel to join
  * @todo Possibly add browser support (Not likely since we need native modules for node-opus in Discord.js)
@@ -658,7 +701,7 @@ function voice(voiceChannelID) {
 
 /**
  * Leaves all connected voice channels (if applicable) and destroys their attached microphones
- * 
+ *
  * @function
  */
 function leaveVoice() {
@@ -693,7 +736,7 @@ $(document).ready(function () {
     }
   })
   bot.browser = IsNode
-  bot.login(window.localStorage.getItem("token")).catch(function (err) {
+  bot.login(token).catch(function (err) {
     logger.error(err)
     window.location.href = "login.html"
   })
@@ -786,18 +829,18 @@ $(document).ready(function () {
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
-        case "invite": {
-          bot.channels.get(options.$trigger[0].id).createInvite({
-            temporary: false,
-            max_users: 0,
-            max_age: 0
-          }).then(function (invite) {
-            $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
-            $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
-            $("#display-invite-modal").modal()
-          }).catch(logger.warn)
-          break
-        }
+      case "invite": {
+        bot.channels.get(options.$trigger[0].id).createInvite({
+          temporary: false,
+          max_users: 0,
+          max_age: 0
+        }).then(function (invite) {
+          $("#display-invite-modal > span#invite-text").text(`${inviteBase}/${invite.code}`)
+          $("#display-invite-modal > h2 > span#server-name").text(invite.guild.name)
+          $("#display-invite-modal").modal()
+        }).catch(logger.warn)
+        break
+      }
       }
     },
     items: {
@@ -808,30 +851,30 @@ $(document).ready(function () {
     selector: ".member-list-member",
     callback: function (key, options) {
       switch (key) {
-        case "ban": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
-            logger.debug("User banned")
-            loadMembers()
+      case "ban": {
+        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).ban().then(function () {
+          logger.debug("User banned")
+          loadMembers()
+        }).catch(logger.warn)
+        break
+      }
+      case "kick": {
+        bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
+          logger.debug("User kicked")
+          loadMembers()
+        }).catch(logger.warn)
+        break
+      }
+      case "nickname": {
+        $("#nickname-modal").modal()
+        $("#change-nickname").click(function () {
+          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
+            logger.debug("Set nickname")
+            $.modal.close()
           }).catch(logger.warn)
-          break
-        }
-        case "kick": {
-          bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).kick().then(function () {
-            logger.debug("User kicked")
-            loadMembers()
-          }).catch(logger.warn)
-          break
-        }
-        case "nickname": {
-          $("#nickname-modal").modal()
-          $("#change-nickname").click(function () {
-            bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
-              logger.debug("Set nickname")
-              $.modal.close()
-            }).catch(logger.warn)
-          })
-          break
-        }
+        })
+        break
+      }
       }
     },
     items: {
@@ -847,43 +890,43 @@ $(document).ready(function () {
       let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
-        case "copy": {
-          var range = document.createRange()
-          range.selectNode(messageContent)
-          window.getSelection().addRange(range)
+      case "copy": {
+        var range = document.createRange()
+        range.selectNode(messageContent)
+        window.getSelection().addRange(range)
 
-          try {
-            document.execCommand("copy")
-          } catch (err) {
-            logger.warn(err)
+        try {
+          document.execCommand("copy")
+        } catch (err) {
+          logger.warn(err)
+        }
+        window.getSelection().removeAllRanges()
+        logger.log("Copy")
+        break
+      }
+      case "delete": {
+        bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
+          logger.debug("Deleted message " + messageId)
+        }).catch(logger.warn)
+        break
+      }
+      case "edit": {
+        $(messageContent).attr("contenteditable", "true")
+        $(messageContent).focus()
+        $(messageContent).on("keydown", function (e) {
+          if (!e) e = window.event
+          var keyCode = e.keyCode || e.which
+          if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
+            e.preventDefault()
+            bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
+              logger.debug("Edited message " + messageId)
+            }).catch(logger.warn)
+            $(messageContent).attr("contenteditable", "false")
           }
-          window.getSelection().removeAllRanges()
-          logger.log("Copy")
-          break
-        }
-        case "delete": {
-          bot.channels.get(window.channelID).messages.get(messageId).delete().then(function () {
-            logger.debug("Deleted message " + messageId)
-          }).catch(logger.warn)
-          break
-        }
-        case "edit": {
-          $(messageContent).attr("contenteditable", "true")
-          $(messageContent).focus()
-          $(messageContent).on("keydown", function (e) {
-            if (!e) e = window.event
-            var keyCode = e.keyCode || e.which
-            if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
-              e.preventDefault()
-              bot.channels.get(window.channelID).messages.get(messageId).edit(messageContent.textContent).then(function () {
-                logger.debug("Edited message " + messageId)
-              }).catch(logger.warn)
-              $(messageContent).attr("contenteditable", "false")
-            }
-          })
-          logger.log("Editing")
-          break
-        }
+        })
+        logger.log("Editing")
+        break
+      }
       }
     },
     items: {
@@ -899,7 +942,7 @@ $(document).ready(function () {
 
 /**
  * Changes the channel to the given one
- * 
+ *
  * @function
  * @param {String|Number} channelID - The ID of the channel to change to
  * @param {Boolean} silent - Whether or not to show the message that the channel has been changed. Defaults to false
@@ -926,7 +969,7 @@ function ChannelChange(channelID, silent) {
 
 /**
  * Populates the right pane with the member list
- * 
+ *
  * @function
  * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
  */
@@ -1011,7 +1054,7 @@ function loadMembers(memb) {
 
 /**
  * Loads the messages in the current channel
- * 
+ *
  * @function
  * @param {Boolean} hideLoaderAfter - If true, hides the loading screen after it completes. Defaults to false
  */
@@ -1075,7 +1118,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
 
 /**
  * Renders the guild list
- * 
+ *
  * @function
  */
 function loadServers() {
@@ -1125,7 +1168,7 @@ function loadServers() {
 
 /**
  * Loads the channel list
- * 
+ *
  * @function
  * @param {Channel} chan - Optional. If provided, checks if the channel is in the current guild before running.
  */
@@ -1177,14 +1220,14 @@ function loadChannels(chan) {
 
 /**
  * An optional callback used to handle the resulting DOM node
- * 
+ *
  * @callback loadVoiceMembersCallback
  * @param {DOMElement} container - The element from before, but populated with the members
  */
 
 /**
  * Loads the users in a voice channel
- * 
+ *
  * @function
  * @param {String} channelID - ID of voice channel the node is to be attached to
  * @param {DOMElement} container - A DOM element to be populated.

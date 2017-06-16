@@ -436,7 +436,7 @@ time {
 }
 
 .twemoji-picker {
-  background-color: #23272A; 
+  background-color: #23272A;
   border-color: #23272A;
 }
 
@@ -534,7 +534,17 @@ body {
   float: left;
   border-radius: 40px;
   height: 40px;
-  width: 40px;  
+  width: 40px;
+}
+
+#typing-indicator {
+  z-index: 5;
+  transform: translate(0, -17px);
+  position: absolute;
+  border-radius: 4px;
+  background-color: #303338;
+  padding: 0 10px;
+  font-size: 0.5em;
 }
 
 #loading-landing {
@@ -542,7 +552,7 @@ body {
   width: 100%;
   background-color: #2C2F33;
   z-index: 1000;
-  position: absolute;    
+  position: absolute;
   margin:auto;
   top:0;
   bottom:0;
