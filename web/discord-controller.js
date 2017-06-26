@@ -65,7 +65,7 @@ var logger = {
 }
 if (IsNode) {
   window.Discord = require("discord.js")
-  Speaker = require("speaker")
+  //Speaker = require("speaker")
   chalk = require("chalk")
   shell = require("electron").shell
   $(".git-revision").text("A:" + atomicRevision + " - L:N/A")
