@@ -1,6 +1,6 @@
 const {app, BrowserWindow} = require("electron")
 
-let mainWindow
+var mainWindow
 require("electron-debug")({enabled: true})
 app.on("ready", () => {
   mainWindow = new BrowserWindow({

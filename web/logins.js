@@ -2,7 +2,7 @@ $.ajaxSetup({
   contentType: "application/json; charset=utf-8"
 })
 
-let APIBase = window.localStorage.getItem("url-api") || "https://discordapp.com"
+var APIBase = window.localStorage.getItem("url-api") || "https://discordapp.com"
 
 $(document).ready(function () {
   $("#login").click(login)

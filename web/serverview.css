@@ -547,6 +547,12 @@ body {
   font-size: 0.5em;
 }
 
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-user-modify: read-write;
+}
+
 #loading-landing {
   height: 100%;
   width: 100%;

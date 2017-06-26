@@ -1,16 +1,16 @@
 const IsNode = typeof process == "undefined" ? false : true
-let shell
-let bot
-let fs
-let path
-let atomicRevision = "N/A"
-let litecordRevision = "N/A"
-let chalk
-let Speaker
-let Mic
-let token = window.localStorage.getItem("token")
-let conzole = console // Hack to fool ESLint
-let logger = {
+var shell
+var bot
+var fs
+var path
+var atomicRevision = "N/A"
+var litecordRevision = "N/A"
+var chalk
+var Speaker
+var Mic
+var token = window.localStorage.getItem("token")
+var conzole = console // Hack to fool ESLint
+var logger = {
   /**
    * Logs a message as `info` to the browser console and (if running on electron) stdout
    *
@@ -78,7 +78,7 @@ if (!window.localStorage.getItem("token")) window.location.href = "login.html"
 const cdn = window.localStorage.getItem("url-cdn") || "https://cdn.discordapp.com"
 const endpoint = window.localStorage.getItem("url-api") || "https://discordapp.com"
 const inviteBase = window.localStorage.getItem("url-invite") || "https://discord.gg"
-let shortcodes = {} // We just leave this empty before the request finishes so the page will still load
+var shortcodes = {} // We just leave this empty before the request finishes so the page will still load
 $.get("emojis2.json", function (result) {
   if (typeof result != "object") result = JSON.parse(result)
   shortcodes = result
@@ -123,19 +123,19 @@ function loadPlugins(dir, callback) {
       if (callback) return callback(err)
       else throw new Error("Error loading plugins " + err)
     }
-    let plugins = []
-    let plugpaths = window.plugins.map(function (x) {
+    var plugins = []
+    var plugpaths = window.plugins.map(function (x) {
       return x.file
     })
     files.forEach(function (plugin, i) {
       if (plugpaths.includes(plugin)) return logger.debug("Skipping already-loaded plugin: " + plugin)
-      let pl = require(path.join(dir, path.basename(plugin)))
+      var pl = require(path.join(dir, path.basename(plugin)))
       plugins.push({
         file: plugin,
         plugin: pl
       })
-      for (let hk in pl.hooks) {
-        let hook = pl.hooks[hk]
+      for (var hk in pl.hooks) {
+        var hook = pl.hooks[hk]
         switch (hook.trigger) {
         case "load": {
           hook.run(bot)
@@ -185,9 +185,9 @@ function sanitizeHTML(content) {
 function createEmbed(embed) {
   logger.debug("Creating embed")
   if (embed.type == "image") {
-    let link = embed.thumbnail.proxyURL
+    var link = embed.thumbnail.proxyURL
     logger.debug("Adding " + link + " as an image...")
-    let imgnode = document.createElement("img")
+    var imgnode = document.createElement("img")
     imgnode.src = embed.thumbnail.proxyURL
     imgnode.setAttribute("original-url", embed.thumbnail.url)
     imgnode.onload = function () {
@@ -200,10 +200,10 @@ function createEmbed(embed) {
     return { type: "image", image: imgnode }
   }
   if (embed.type == "gifv") {
-    let link = embed.thumbnail.proxyURL
+    var link = embed.thumbnail.proxyURL
     logger.debug("Adding " + link + " as an image...")
-    let vidnode = document.createElement("video")
-    let sourcenode = document.createElement("source")
+    var vidnode = document.createElement("video")
+    var sourcenode = document.createElement("source")
     vidnode.autoplay = "autoplay"
     vidnode.muted = "muted"
     vidnode.loop = "loop"
@@ -213,7 +213,7 @@ function createEmbed(embed) {
     return { type: "image", image: vidnode }
   }
   if (embed.type == "video") {
-    let iframenode = document.createElement("iframe")
+    var iframenode = document.createElement("iframe")
     iframenode.width = "100%"
     iframenode.height = "50%"
     iframenode.src = embed.video.url
@@ -221,13 +221,13 @@ function createEmbed(embed) {
     iframenode.allowFullscreen = true
     return { type: "image", image: iframenode }
   }
-  let emb = document.createElement("div")
-  let title = document.createElement("h4")
-  let description = document.createElement("div")
-  let stamp = document.createElement("time")
-  let colorbar = document.createElement("div")
-  let image = document.createElement("img")
-  let thumb = document.createElement("img")
+  var emb = document.createElement("div")
+  var title = document.createElement("h4")
+  var description = document.createElement("div")
+  // var stamp = document.createElement("time")
+  // var colorbar = document.createElement("div")
+  var image = document.createElement("img")
+  var thumb = document.createElement("img")
   if (embed.title) {
     if (embed.url) {
       title = document.createElement("a")
@@ -266,13 +266,13 @@ function createEmbed(embed) {
  * @returns {DOMElement} The same DOM object as before, but the Discord emotes have been replaced with their respective images
  */
 function parseDiscordEmotes(content) {
-  let arr = content.innerHTML.match(/&lt;:\S*:[0-9]{18}&gt;/gi)
+  var arr = content.innerHTML.match(/&lt;:\S*:[0-9]{18}&gt;/gi)
   if (!arr) arr = []
-  for (let itm in arr) {
-    let emote = arr[itm]
-    let colsplit = emote.split(":")
-    let link = `${cdn}/emojis/${colsplit[colsplit.length - 1].substring(0, colsplit[colsplit.length - 1].length - 4)}.png`
-    let imgnode = document.createElement("img")
+  for (var itm in arr) {
+    var emote = arr[itm]
+    var colsplit = emote.split(":")
+    var link = `${cdn}/emojis/${colsplit[colsplit.length - 1].substring(0, colsplit[colsplit.length - 1].length - 4)}.png`
+    var imgnode = document.createElement("img")
     imgnode.classList = "emoji"
     imgnode.style.background = "none"
     // imgnode.height = "22px"
@@ -298,12 +298,12 @@ function parseDiscordEmotes(content) {
  * @returns {Object} Object containing the keys `links` and `imghtml`. `links` is the `content` parameter from before but the textual links in it have been replaced with clickable links
  */
 function createLinksAndImages(content, images) {
-  let temphtml = content.innerHTML.replace(/```.*```/g, "").replace(/`.*`/g, "") // Big hack...
-  let arr = temphtml.match(urlexp)
-  for (let itm in arr) {
-    let link = arr[itm]
+  var temphtml = content.innerHTML.replace(/```.*```/g, "").replace(/`.*`/g, "") // Big hack...
+  var arr = temphtml.match(urlexp)
+  for (var itm in arr) {
+    var link = arr[itm]
     logger.debug("Adding " + link + " to DOM")
-    let anode = document.createElement("a")
+    var anode = document.createElement("a")
     anode.href = "#"
     anode.setAttribute("data-link", link)
     anode.innerHTML = link
@@ -324,37 +324,37 @@ function createLinksAndImages(content, images) {
  * @returns {DOMElement} `content` parameter from before but the markdown has been rendered
  */
 function parseMarkdown(content, maskedLinks) {
-  let txt = content.innerHTML
-  let bold = txt.match(/\*\*.*\*\*/g)
-  for (let i in bold) {
+  var txt = content.innerHTML
+  var bold = txt.match(/\*\*.*\*\*/g)
+  for (var i in bold) {
     logger.debug("Bold")
-    let match = bold[i]
+    var match = bold[i]
     txt = txt.replace(match, "<b>" + match.replace(/\*\*/g, "") + "</b>")
   }
-  let underlined = txt.match(/__.*__/g)
-  for (let i in underlined) {
+  var underlined = txt.match(/__.*__/g)
+  for (var i in underlined) {
     logger.debug("Underline")
-    let match = underlined[i]
+    var match = underlined[i]
     txt = txt.replace(match, "<underline>" + match.replace(/\_\_/g, "") + "</underline>")
   }
-  let italics = txt.match(/(\*.*\*|_.*_)/g)
-  for (let i in italics) {
+  var italics = txt.match(/(\*.*\*|_.*_)/g)
+  for (var i in italics) {
     logger.debug("Italics")
-    let match = italics[i]
+    var match = italics[i]
     txt = txt.replace(match, "<i>" + match.replace(/\*/g, "").replace(/\_/g, "") + "</i>")
   }
-  let strikethrough = txt.match(/~~.*~~/g)
-  for (let i in strikethrough) {
+  var strikethrough = txt.match(/~~.*~~/g)
+  for (var i in strikethrough) {
     logger.debug("Strikethru")
-    let match = strikethrough[i]
+    var match = strikethrough[i]
     txt = txt.replace(match, "<strike>" + match.replace(/~~/g, "") + "</strike>")
   }
-  let codeblock = txt.match(/```[\s\S]*```/g)
-  for (let i in codeblock) {
+  var codeblock = txt.match(/```[\s\S]*```/g)
+  for (var i in codeblock) {
     logger.debug("Codeblock")
-    let match = codeblock[i]
-    let finaltext = match.replace(/```/g, "")
-    let lang = finaltext.split("<br>")[0].toLowerCase()
+    var match = codeblock[i]
+    var finaltext = match.replace(/```/g, "")
+    var lang = finaltext.split("<br>")[0].toLowerCase()
     logger.debug("CODEBLOCK LANG: " + lang)
     if (hljs.getLanguage(lang)) {
       finaltext = finaltext.replace(new RegExp(lang, "i"), "")
@@ -363,19 +363,19 @@ function parseMarkdown(content, maskedLinks) {
     finaltext = `<code class="codeblock ${lang}">${finaltext.replace(/^<br>+|<br>+$/gm, "")}</code>`
     txt = txt.replace(match, finaltext)
   }
-  let code = txt.match(/`.*`/g)
-  for (let i in code) {
+  var code = txt.match(/`.*`/g)
+  for (var i in code) {
     logger.debug("Code")
-    let match = code[i]
+    var match = code[i]
     txt = txt.replace(match, "<code>" + match.replace(/`/g, "") + "</code>")
   }
   if (maskedLinks) {
     logger.debug("Masked links on")
-    let masked = txt.match(/\[.*\]\((http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\)/gi)
-    for (let i in masked) {
+    var masked = txt.match(/\[.*\]\((http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\)/gi)
+    for (var i in masked) {
       logger.debug("Masked link")
-      let match = masked[i]
-      let anode = document.createElement("a")
+      var match = masked[i]
+      var anode = document.createElement("a")
       anode.href = "#"
       anode.setAttribute("data-link", match.replace(/\[[\s\S]*\]\(/, "").replace(/\)/g, ""))
       $(anode).text(match.replace("[", "").replace(/\].*/, ""))
@@ -405,32 +405,32 @@ const urlexp = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*
  */
 function addMessageToDOM(msg, complete) {
   if (!msg.guild.members.get(msg.author.id)) return
-  let { embeds } = msg
-  let message = msg.cleanContent // Just to make it a bit more readable while we have no mentions set up
-  let channel = msg.channel.id
+  var { embeds } = msg
+  var message = msg.cleanContent // Just to make it a bit more readable while we have no mentions set up
+  var channel = msg.channel.id
   if (window.channelID != msg.channel.id) return
-  let messageInput = document.getElementById("message-input")
+  var messageInput = document.getElementById("message-input")
   messageInput.setAttribute("placeholder", "Message #" + channel.name || "")
   window.channelID = msg.channel.id
   // We got a new message
-  let container = document.createElement("div")
-  let msgobj = document.createElement("div")
-  let title = document.createElement("h2")
+  var container = document.createElement("div")
+  var msgobj = document.createElement("div")
+  var title = document.createElement("h2")
   title.textContent = msg.guild.members.get(msg.author.id).displayName + (msg.author && msg.author.bot ? " [BOT]" : "")
   title.classList = "username"
   title.style.color = msg.guild.members.get(msg.author.id).displayHexColor
   msgobj.appendChild(title)
-  let avatar = document.createElement("img")
-  avatar.src = msg.author.displayAvatarURL
+  var avatar = document.createElement("img")
+  avatar.src = msg.author.displayAvatarURL()
   avatar.classList = "avatar"
 
-  let content = document.createElement("div")
+  var content = document.createElement("div")
   content.classList = "content"
 
-  let images = document.createElement("div")
+  var images = document.createElement("div")
   images.classList = "images"
 
-  let time = document.createElement("time")
+  var time = document.createElement("time")
   time.classList = "message-timestamp"
   time.dateTime = msg.createdTimestamp
   time.textContent = $.timeago(msg.createdTimestamp)
@@ -439,8 +439,8 @@ function addMessageToDOM(msg, complete) {
   })
   msgobj.appendChild(time)
 
-  for (let short in shortcodes) {
-    let myemotes = ""
+  for (var short in shortcodes) {
+    var myemotes = ""
     shortcodes[short].split("-").forEach(function (code) {
       myemotes += twemoji.convert.fromCodePoint(code)
     })
@@ -448,7 +448,7 @@ function addMessageToDOM(msg, complete) {
   }
 
   content.innerHTML = sanitizeHTML(message)
-  let { imghtml, links } = createLinksAndImages(content, images)
+  var { imghtml, links } = createLinksAndImages(content, images)
   content = links
   images = imghtml
   content = parseDiscordEmotes(content)
@@ -460,9 +460,9 @@ function addMessageToDOM(msg, complete) {
     })
   })
 
-  let attachments = msg.attachments.array()
-  for (let att in attachments) {
-    let imgnode = document.createElement("img")
+  var attachments = msg.attachments.array()
+  for (var att in attachments) {
+    var imgnode = document.createElement("img")
     imgnode.src = attachments[att].proxyURL
     imgnode.onload = function () {
       imgnode.style.background = "none"
@@ -475,28 +475,35 @@ function addMessageToDOM(msg, complete) {
   }
 
   $(content).children("a").click(function () {
-    let link = this.getAttribute("data-link")
+    var link = this.getAttribute("data-link")
     if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*")) == link) {
       logger.debug("Clicked gg link")
-      // snekfetch("POST", `${endpoint}/invite/${link.replace(inviteBase + "/", "")}`, {
-      //   Authorization: "Authorization: Bot " + token
-      // })
-      bot.user.acceptInvite(link.replace(inviteBase + "/", "")).then(function (guild) {
-        logger.debug("Invite accepted")
-        ChannelChange(guild.id)
-        loadServers()
-      }).catch(logger.warn)
+      $.ajax({
+        settings: {
+          headers: {
+            authorization: `Authorization:${bot.user.bot ? " Bot" : ""} ${token}`,
+            accept: "*/*",
+            "accept-language": "en-US;q=0.8"
+          }
+        },
+        success: function(data) {
+          console.log(data)
+          logger.ok("Accepted invite")
+          ChannelChange(data.channel.id)
+          loadServers()
+        }
+      })
     } else {
       logger.debug("Clicked normal link")
       if (IsNode) shell.openExternal(link)
       else window.open(link, "_blank").focus()
     }
   })
-  let embedsobj = document.createElement("div")
-  for (let itm in embeds) {
-    let embd = createEmbed(embeds[itm])
+  var embedsobj = document.createElement("div")
+  for (var itm in embeds) {
+    var embd = createEmbed(embeds[itm])
     if (embd.type == "embed") {
-      let embedobj = document.createElement("div")
+      var embedobj = document.createElement("div")
       embedobj.innerHTML = embd.embed
       embedobj.classList = "embed"
       embedsobj.appendChild(embedobj)
@@ -515,7 +522,7 @@ function addMessageToDOM(msg, complete) {
   })
 }
 
-let typingUsers = {}
+var typingUsers = {}
 
 /**
  * Loads the users currently typing from the typingUsers array
@@ -525,17 +532,17 @@ let typingUsers = {}
 function loadTypingUsers() {
   // We would use Object.values(typingUsers)... but IE exists... Also, it's not defined exactly
   // How it's supposed to work so different JS engines implement it differently
-  let typingArr = Object.keys(typingUsers).map(function(u) {
+  var typingArr = Object.keys(typingUsers).map(function(u) {
     return typingUsers[u]
   })
-  let len = typingArr.length
-  let text
+  var len = typingArr.length
+  var text
   if(len == 0) text = ""
   else if(len == 1) text = typingArr[0]
   else if(len == 2) text = typingArr[0] + " and " + typingArr[1]
   else if(len == 3) text = typingArr[0] + ", " + typingArr[1] + ", and " + typingArr[2]
   else text = "Several users"
-  let indicator = document.getElementById("typing-indicator")
+  var indicator = document.getElementById("typing-indicator")
   indicator.innerText = text
 }
 
@@ -552,7 +559,7 @@ function BotListeners() {
   bot.on("warn", logger.warn)
   bot.on("message", function (msg) {
     addMessageToDOM(msg, function (nodes) {
-      let { avatar, content, images, msgobj, container } = nodes
+      var { avatar, content, images, msgobj, container } = nodes
 
       container.appendChild(avatar)
       msgobj.appendChild(content)
@@ -562,7 +569,7 @@ function BotListeners() {
       if (msg.author.id == bot.user.id) container.classList += " my-message"
       msgobj.classList = "message-inner"
       container.appendChild(msgobj)
-      let messages = document.getElementById("messages")
+      var messages = document.getElementById("messages")
       messages.appendChild(container)
 
       messages.scrollTop = messages.scrollHeight + 10 // Scroll to bottom of page
@@ -571,14 +578,14 @@ function BotListeners() {
 
   bot.on("typingStart", function(channel, user) {
     if(channel.id != window.channelID) return
-    let guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
+    var guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
     typingUsers[guildmember.id] = guildmember.displayName
     loadTypingUsers()
   })
 
   bot.on("typingStop", function(channel, user) {
     if(channel.id != window.channelID) return
-    let guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
+    var guildmember = bot.channels.get(channel.id).guild.members.get(user.id)
     delete typingUsers[guildmember.id]
     loadTypingUsers()
   })
@@ -587,7 +594,7 @@ function BotListeners() {
     if (newmember.guild.id != bot.channels.get(window.channelID).guild.id) return
     newmember.guild.channels.forEach(function (chan) {
       if (chan.type != "voice") return
-      let voiceList = document.getElementById("voice-list-" + chan.id)
+      var voiceList = document.getElementById("voice-list-" + chan.id)
       loadVoiceMembers(chan.id, voiceList, function (newnode) {
         document.getElementById(chan.id).replaceChild(newnode, voiceList)
       })
@@ -615,10 +622,10 @@ function BotListeners() {
 
   bot.on("messageUpdate", function (oldmsg, newmsg) {
     if (!oldmsg || oldmsg.channel.id != window.channelID) return
-    let container = document.getElementById("msg-" + oldmsg.id)
+    var container = document.getElementById("msg-" + oldmsg.id)
 
     addMessageToDOM(newmsg, function (items) {
-      let { content, images } = items
+      var { content, images } = items
       container.getElementsByTagName("div")[0].replaceChild(content, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.content`)[0])
       container.getElementsByTagName("div")[0].replaceChild(images, document.body.querySelectorAll(`div#msg-${oldmsg.id} > div > div.images`)[0])
     })
@@ -669,32 +676,32 @@ function BotListeners() {
  */
 function voice(voiceChannelID) {
   if (!IsNode) return logger.warn("This is only supported on the desktop version!")
-  let chan = bot.channels.get(voiceChannelID)
+  var chan = bot.channels.get(voiceChannelID)
   leaveVoice()
   chan.join().then(function (connection) {
-    let receiver = connection.createReceiver()
+    var receiver = connection.createReceiver()
     chan.members.forEach(function (user) {
-      let speaking = user.speaking
+      var speaking = user.speaking
       if(!speaking) return
       // We create a connection for every user in case they had been speaking before we joined
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
-      let usernode = document.getElementById(user.id)
+      var usernode = document.getElementById(user.id)
       usernode.classList = usernode.classList + " voice-speaking"
     })
     connection.on("speaking", function (user, speaking) {
-      let usernode = document.getElementById(user.id)
+      var usernode = document.getElementById(user.id)
       if (!speaking) return usernode.classList = usernode.classList.value.replace(/( |)voice-speaking/g, "")
       receiver.createPCMStream(user).pipe(new Speaker(), { end: false })
       usernode.classList = usernode.classList + " voice-speaking"
     })
-    let mic = new Mic({
+    var mic = new Mic({
       bitwidth: "16",
       encoding: "signed-integer",
       rate: "48000",
       channels: "2"
     })
     window.micInstance = mic
-    let micstream = mic.startRecording()
+    var micstream = mic.startRecording()
     connection.playConvertedStream(micstream)
   }).catch(logger.warn)
 }
@@ -742,7 +749,7 @@ $(document).ready(function () {
   })
   BotListeners()
   $("#create-channel").click(function () {
-    let newChannelName = document.getElementById("new-channel-name")
+    var newChannelName = document.getElementById("new-channel-name")
     bot.channels.get(window.channelID).guild.createChannel(newChannelName.value).then(function (channel) {
       ChannelChange(channel.id)
       newChannelName.value = ""
@@ -759,7 +766,7 @@ $(document).ready(function () {
     }).catch(logger.warn)
   })
   document.getElementById("file-upload").onchange = function (ev) {
-    let fr = new FileReader()
+    var fr = new FileReader()
     fr.onload = function () {
       bot.channels.get(window.channelID).send("", {
         files: [{
@@ -773,9 +780,9 @@ $(document).ready(function () {
     fr.readAsArrayBuffer(ev.target.files[0])
   }
   document.getElementById("avatar-upload").onchange = function (ev) {
-    let fr = new FileReader()
+    var fr = new FileReader()
     fr.onload = function () {
-      let base64 = this.result
+      var base64 = this.result
       bot.user.setAvatar(base64).then(function () {
         logger.debug("Set avatar")
       }).catch(logger.warn)
@@ -803,12 +810,12 @@ $(document).ready(function () {
   })
   $(".twemoji-textarea").on("keydown", function (e) {
     if (!e) e = window.event
-    let chan = bot.channels.get(window.channelID)
+    var chan = bot.channels.get(window.channelID)
     chan.startTyping()
     setTimeout(function() {
       chan.stopTyping()
     }, 1000 * 5)
-    let messageInput = document.getElementById("message-input")
+    var messageInput = document.getElementById("message-input")
     var keyCode = e.keyCode || e.which
     if (keyCode == "13" && !e.shiftKey) { // We ignore enter key if shift is held down, just like the real client
       e.preventDefault()
@@ -841,6 +848,22 @@ $(document).ready(function () {
         }).catch(logger.warn)
         break
       }
+      case "delete": {
+        bot.channels.get(options.$trigger[0].id).delete()
+        break
+      }
+      case "edit": {
+        let channel = bot.channels.get(options.$trigger[0].id)
+        $("#edit-textchannel-name").val(channel.name)
+        $("#edit-textchannel-topic").val(channel.topic || "")
+        $("#edit-textchannel-modal").modal()
+        $("#edit-textchannel").one("click", function() {
+          channel.edit({
+            name: $("#edit-textchannel-name").val(),
+            topic: $("#edit-textchannel-topic").val() || ""
+          })
+        })
+      }
       }
     },
     items: {
@@ -867,7 +890,7 @@ $(document).ready(function () {
       }
       case "nickname": {
         $("#nickname-modal").modal()
-        $("#change-nickname").click(function () {
+        $("#change-nickname").one("click", function () {
           bot.channels.get(window.channelID).guild.members.get(options.$trigger[0].id).setNickname($("#nickname").val()).then(function () {
             logger.debug("Set nickname")
             $.modal.close()
@@ -883,11 +906,11 @@ $(document).ready(function () {
       nickname: { name: "Set Nickname", icon: "edit" }
     }
   })
-  let contextOptions = {
+  var contextOptions = {
     selector: ".message:not(.my-message)",
     callback: function (key, options) {
-      let messageId = options.$trigger[0].id.replace("msg-", "")
-      let messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
+      var messageId = options.$trigger[0].id.replace("msg-", "")
+      var messageContent = document.querySelector(`#${options.$trigger[0].id} > .message-inner > .content`)
       // TODO: Actually make these do stuff
       switch (key) {
       case "copy": {
@@ -950,13 +973,13 @@ $(document).ready(function () {
 function ChannelChange(channelID, silent) {
   if (window.channelID == channelID) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
-  let channel = bot.channels.get(channelID)
-  let server = channel.guild
-  let title = `#${channel.name} in ${server.name} - ${channel.topic}`
+  var channel = bot.channels.get(channelID)
+  var server = channel.guild
+  var title = `#${channel.name} in ${server.name} - ${channel.topic}`
   if (IsNode) document.getElementById("window-title").textContent = title
   else document.title = title
   if (!silent) {
-    let changemsg = document.createElement("div")
+    var changemsg = document.createElement("div")
     changemsg.classList = "info-message"
     changemsg.innerHTML = `Changed to #${channel.name} on ${server.name} - ${channel.topic ? channel.topic : "<no channel topic>"}`
     document.getElementById("messages").appendChild(changemsg)
@@ -975,19 +998,19 @@ function ChannelChange(channelID, silent) {
  */
 function loadMembers(memb) {
   if (memb && memb.guild && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
-  let memberList = document.getElementById("member-list")
+  var memberList = document.getElementById("member-list")
   memberList.innerHTML = ""
-  let guild = bot.channels.get(window.channelID).guild
-  let mem = guild.members.array()
-  let roles = {}
+  var guild = bot.channels.get(window.channelID).guild
+  var mem = guild.members.array()
+  var roles = {}
   mem.forEach(function (user, i) {
-    let container = document.createElement("div")
-    let avatar = document.createElement("div")
-    let username = document.createElement("h2")
-    let presence = document.createElement("div")
+    var container = document.createElement("div")
+    var avatar = document.createElement("div")
+    var username = document.createElement("h2")
+    var presence = document.createElement("div")
     if (!user) return
     username.textContent = user.displayName
-    avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL + "')"
+    avatar.style.backgroundImage = "url('" + user.user.displayAvatarURL() + "')"
     avatar.classList = "member-list-avatar"
     presence.classList = "status status-" + (user.user.id == bot.user.id ? bot.user.settings.status : user.user.presence.status)
     container.classList = "member-list-member"
@@ -1028,13 +1051,13 @@ function loadMembers(memb) {
       Object.keys(roles).sort(function (a, b) {
         return guild.roles.get(a).position - guild.roles.get(b).position
       }).reverse().forEach(function (roleID) {
-        let role = guild.roles.get(roleID)
-        let rolehoist = document.createElement("div")
+        var role = guild.roles.get(roleID)
+        var rolehoist = document.createElement("div")
         rolehoist.classList = "role-section"
-        let rolename = document.createElement("div")
+        var rolename = document.createElement("div")
         rolename.classList = "role-name"
         rolename.innerText = role ? role.name : "undefined"
-        let rolemembers = document.createElement("div")
+        var rolemembers = document.createElement("div")
         rolemembers.id = "role-" + roleID
         rolehoist.appendChild(rolename)
         roles[roleID].sort(function (a, b) {
@@ -1060,15 +1083,15 @@ function loadMembers(memb) {
  */
 function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   logger.debug("Grabbing messages")
-  let msgdom = document.getElementById("messages")
-  let options = {
+  var msgdom = document.getElementById("messages")
+  var options = {
     limit: 100
   }
   if (window.currentMessages.channelID == window.channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.channels.get(window.channelID).fetchMessages(options).then(function (messages) {
     logger.debug("Got messages " + typeof messages + " : " + messages.length)
-    let oldScrollHeight = msgdom.scrollHeight
-    let scrolltobottom = window.currentMessages.channelID == window.channelID
+    var oldScrollHeight = msgdom.scrollHeight
+    var scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
       messages.forEach(function (msg) {
         window.currentMessages.arr.unshift(msg)
@@ -1084,7 +1107,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
       msgdom.innerHTML = ""
     }
 
-    let len = messages.size
+    var len = messages.size
 
     if (len <= 0) {
       if (hideLoaderAfter) $("#loading-landing").css("display", "none")
@@ -1096,7 +1119,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
     messages.forEach(function (curmsg, i) {
       if (!curmsg || !curmsg.author) return
       addMessageToDOM(curmsg, function (items) {
-        let { avatar, content, images, msgobj, container } = items
+        var { avatar, content, images, msgobj, container } = items
         container.appendChild(avatar)
         msgobj.appendChild(content)
         msgobj.appendChild(images)
@@ -1122,19 +1145,19 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
  * @function
  */
 function loadServers() {
-  let serverList = document.getElementById("server-list")
+  var serverList = document.getElementById("server-list")
   serverList.innerHTML = "" // Empty it since we might have something left after we get kicked off because an error happened
-  let srvlist = bot.user.settings && bot.user.settings.guildPositions && bot.user.settings.guildPositions.length > 0 ? bot.user.settings.guildPositions : Array.from(bot.guilds.keys())
+  var srvlist = bot.user.settings && bot.user.settings.guildPositions && bot.user.settings.guildPositions.length > 0 ? bot.user.settings.guildPositions : Array.from(bot.guilds.keys())
   srvlist.forEach(function (srv, i) {
-    let server = bot.guilds.get(srv)
+    var server = bot.guilds.get(srv)
     if (!server) return
-    let servericon = server.iconURL("png", 128)
+    var servericon = server.iconURL("png", 128)
     if (!servericon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
     if (server.unavailable) servericon = "unavailable.png"
-    let servernode = document.createElement("a")
+    var servernode = document.createElement("a")
     servernode.href = "#"
     servernode.classList = "server-icon"
-    let serverimg = document.createElement("img")
+    var serverimg = document.createElement("img")
     serverimg.src = servericon
     serverimg.classList = "server-image"
     serverimg.onload = function () {
@@ -1147,11 +1170,11 @@ function loadServers() {
     }
     serverList.insertBefore(servernode, null)
     if (i + 1 >= srvlist.length) {
-      let addnode = document.createElement("a")
+      var addnode = document.createElement("a")
       addnode.href = "#"
       addnode.classList = "server-icon"
       addnode.id = "new-server-btn"
-      let addimg = document.createElement("img")
+      var addimg = document.createElement("img")
       addimg.src = "new-guild.png"
       addimg.classList = "server-image"
       addimg.onload = function () {
@@ -1174,16 +1197,16 @@ function loadServers() {
  */
 function loadChannels(chan) {
   if (chan && chan.guild.id != bot.channels.get(window.channelID).guild.id) return
-  let textChannelContainer = document.getElementById("text-channels")
-  let voiceChannelContainer = document.getElementById("voice-channels")
+  var textChannelContainer = document.getElementById("text-channels")
+  var voiceChannelContainer = document.getElementById("voice-channels")
   textChannelContainer.innerHTML = ""
   voiceChannelContainer.innerHTML = ""
   if (!bot.channels.get(window.channelID)) return
-  let channels = bot.channels.get(window.channelID).guild.channels
+  var channels = bot.channels.get(window.channelID).guild.channels
   channels = channels.sort(function (a, b) {
     return a.position - b.position
   })
-  let link = document.createElement("a")
+  var link = document.createElement("a")
   link.innerText = "+"
   link.id = "new-channel"
   link.onclick = function () {
@@ -1191,7 +1214,7 @@ function loadChannels(chan) {
   }
   textChannelContainer.appendChild(link)
   channels.forEach(function (channel) {
-    let channelnode = document.createElement("div")
+    var channelnode = document.createElement("div")
     channelnode.href = "#"
     channelnode.id = channel.id
     if (channel.type == "text") {
@@ -1207,7 +1230,7 @@ function loadChannels(chan) {
       channelnode.onclick = function () {
         voice(channel.id)
       }
-      let membersnode = document.createElement("div")
+      var membersnode = document.createElement("div")
       membersnode.class = "voice-list"
       membersnode.id = "voice-list-" + channel.id
       loadVoiceMembers(channel.id, membersnode, function (newnode) {
@@ -1235,21 +1258,21 @@ function loadChannels(chan) {
  */
 function loadVoiceMembers(channelID, container, cb) {
   container.innerHTML = ""
-  let chan = bot.channels.get(channelID)
+  var chan = bot.channels.get(channelID)
   if (chan.members.size < 1) return cb(container)
   chan.members.forEach(function (member, indx) {
-    let memnode = document.createElement("div")
+    var memnode = document.createElement("div")
     memnode.id = member.id
     memnode.classList = "voice-user" + (member.deaf ? " voice-deaf" : "") + (member.mute ? " voice-mute" : "") + (member.speaking ? " voice-speaking" : "")
-    let avatar = document.createElement("div")
+    var avatar = document.createElement("div")
     avatar.classList = "voice-avatar"
-    avatar.style.backgroundImage = `url('${member.user.displayAvatarURL}')`
+    avatar.style.backgroundImage = `url('${member.user.displayAvatarURL()}')`
     memnode.appendChild(avatar)
-    let username = document.createElement("h2")
+    var username = document.createElement("h2")
     username.classList = "voice-username"
     $(username).text(member.displayName)
     memnode.appendChild(username)
-    let statusicons = document.createElement("i")
+    var statusicons = document.createElement("i")
     statusicons.classList = "status-icons"
     memnode.appendChild(statusicons)
     container.appendChild(memnode)

@@ -2,6 +2,16 @@
 
 <head>
     <script>
+      // Workaround for browsers without Object.values (Since D.js uses it)
+      if(!Object.values) {
+        Object.values = function values(obj) {
+          return Object.keys(obj).map(function(itm) {
+            return obj[itm]
+          })
+        }
+      }
+    </script>
+    <script>
         if (process && window.localStorage.getItem("show-titlebar") != "false") {
             require("electron-titlebar")
             document.getElementsByTagName("html")[0].classList = "electron"
@@ -250,6 +260,18 @@
             <label for="create-server">Server Name</label><br>
             <input type="text" id="new-server-name" placeholder="Server Name"><br>
             <button id="create-server" rel="modal:close">Create Server</button>
+        </div>
+        <div id="edit-server-modal" style="display:none;">
+            <label for="edit-server-name">Server Name</label><br>
+            <input type="text" id="edit-server-name" placeholder="Server Name"><br>
+            <button id="edit-server" rel="modal:close">Edit Server</button>
+        </div>
+        <div id="edit-textchannel-modal" style="display:none;">
+            <label for="edit-textchannel-name">Channel Name</label><br>
+            <input type="text" id="edit-textchannel-name" placeholder="Channel Name"><br>
+            <label for="edit-textchannel-name">Channel Topic</label><br>
+            <input type="text" id="edit-textchannel-topic" placeholder="Channel Topic"><br>
+            <button id="edit-textchannel" rel="modal:close">Edit Server</button>
         </div>
         <div id="new-channel-modal" style="display:none;">
             <label for="new-channel-name">Server Name</label><br>

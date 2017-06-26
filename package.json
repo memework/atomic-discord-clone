@@ -8,7 +8,10 @@
     "docs": "jsdoc -c conf.json -t ./node_modules/ink-docstrap/template -R README.md -r web",
     "install": "node_modules/.bin/electron-rebuild",
     "start": "node_modules/.bin/electron app.js",
-    "dist": "node_modules/.bin/build -l --x64 --ia32 deb linux pacman rpm && node_modules/.bin/build -m --x64 mac dmg pkg && node_modules/.bin/build -w --x64 --ia32 nsis nsisWeb portable"
+    "dist:mac": "node_modules/.bin/build -m --x64 mac dmg pkg",
+    "dist:windows": "node_modules/.bin/build -w --x64 --ia32 nsis nsisWeb portable",
+    "dist:linux": "node_modules/.bin/build -l --x64 --ia32 deb linux pacman rpm",
+    "start:web": "node_modules/.bin/live-server --host=0.0.0.0 --open=web"
   },
   "repository": {
     "type": "git",
@@ -29,6 +32,7 @@
     "discord.js": "github:hydrabolt/discord.js#master",
     "electron-debug": "^1.1.0",
     "electron-titlebar": "0.0.3",
+    "live-server": "^1.2.0",
     "node-microphone": "^0.1.3",
     "node-notifier": "^5.1.2",
     "speaker": "^0.3.0"
