@@ -861,13 +861,18 @@ $(document).ready(function () {
           channel.edit({
             name: $("#edit-textchannel-name").val(),
             topic: $("#edit-textchannel-topic").val() || ""
+          }).then(function() {
+            ChannelChange(channel.id)
           })
+          $.modal.close()
         })
       }
       }
     },
     items: {
-      invite: { name: "Create Instant Invite", icon: "add" }
+      invite: { name: "Create Instant Invite", icon: "add" },
+      delete: { name: "Delete", icon: "delete" },
+      edit: { name: "Edit", icon: "edit" },
     }
   })
   $.contextMenu({
@@ -969,9 +974,10 @@ $(document).ready(function () {
  * @function
  * @param {String|Number} channelID - The ID of the channel to change to
  * @param {Boolean} silent - Whether or not to show the message that the channel has been changed. Defaults to false
+ * @param {Boolean} force - Whether or not to force channel change even if we're already in the channel
  */
-function ChannelChange(channelID, silent) {
-  if (window.channelID == channelID) return // We're already in the channel...
+function ChannelChange(channelID, silent, force) {
+  if (window.channelID == channelID && !force) return // We're already in the channel...
   window.localStorage.setItem("lastchannel", channelID)
   var channel = bot.channels.get(channelID)
   var server = channel.guild
