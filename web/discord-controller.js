@@ -833,6 +833,51 @@ $(document).ready(function () {
     }
   })
   $.contextMenu({
+    selector: ".server-icon",
+    callback: function (key, options) {
+      switch (key) {
+      case "delete": {
+        bot.guilds.get(options.$trigger[0].id).delete()
+        break
+      }
+      case "edit": {
+        let guild = bot.guilds.get(options.$trigger[0].id)
+        $("#edit-server-name").val(guild.name)
+        $("#edit-server-modal").modal()
+        $("#edit-server").one("click", function() {
+          var iconUpload = document.getElementById("edit-server-icon")
+          if(iconUpload.files[0]) {
+            var fr = new FileReader()
+            fr.onload = function () {
+              var base64 = this.result
+              guild.edit({
+                name: $("#edit-server-name").val() || guild.name,
+                icon: base64
+              }).then(function() {
+                ChannelChange(window.channelID)
+                loadServers()
+              }).catch(logger.warn)
+            }
+            fr.readAsDataURL(iconUpload.files[0])
+          } else {
+            guild.edit({
+              name: $("#edit-textchannel-name").val() || guild.name
+            }).then(function() {
+              ChannelChange(window.channelID)
+              loadServers()
+            }).catch(logger.warn)
+          }
+          $.modal.close()
+        })
+      }
+      }
+    },
+    items: {
+      delete: { name: "Delete", icon: "delete" },
+      edit: { name: "Edit", icon: "edit" },
+    }
+  })
+  $.contextMenu({
     selector: ".channel-btn",
     callback: function (key, options) {
       switch (key) {
