@@ -1203,7 +1203,7 @@ function loadServers() {
     var server = bot.guilds.get(srv)
     if (!server) return
     var servericon = server.iconURL("png", 128)
-    if (!servericon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
+    if (!servericon) servericon = (!server.available || !server.name || !server.name.match(/\b(\w)/g)) ? "unavailable.png" : "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(server.name.match(/\b(\w)/g).join(""))
     if (server.unavailable) servericon = "unavailable.png"
     var servernode = document.createElement("a")
     servernode.href = "#"
