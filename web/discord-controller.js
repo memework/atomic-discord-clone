@@ -631,6 +631,8 @@ function BotListeners() {
     })
   })
 
+  bot.on("presenceUpdate", loadMembers)
+
   bot.on("messageDelete", function (msg) {
     if (msg.channel.id != window.channelID) return
     document.getElementById("msg-" + msg.id).remove()
@@ -729,6 +731,18 @@ $(document).ready(function () {
       logger.debug(JSON.stringify(plugins))
     })
   }
+  $("select").selectric()
+  $("#presence-changer").on("change", function() {
+    let presence = this.value
+    // One of idle, invisible, afk, online
+    bot.user.setPresence({
+      status: presence
+    }).then(function() {
+      logger.ok("Set presence!")
+    }).catch(function(err) {
+      logger.warn("Heck! " + err)
+    })
+  })
   $(document).on("keypress", function (e) {
     var tag = e.target.tagName.toLowerCase()
     if (tag != "input" && tag != "textarea" && tag != "select" && !$(e.target).attr("contenteditable")) {
@@ -1045,10 +1059,11 @@ function ChannelChange(channelID, silent, force) {
  * Populates the right pane with the member list
  *
  * @function
- * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
+ * @param {GuildMember|User} memb - Optional. If given, it checks if the user is in the current guild before loading
  */
 function loadMembers(memb) {
-  if (memb && memb.guild && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
+  if(memb && memb.guild) memb = memb.user
+  if(memb && memb.id && !bot.channels.get(window.channelID).guild.members.get(memb.id)) return
   var memberList = document.getElementById("member-list")
   memberList.innerHTML = ""
   var guild = bot.channels.get(window.channelID).guild

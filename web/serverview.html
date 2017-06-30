@@ -40,6 +40,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.4.5/jquery.contextMenu.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.4.5/jquery.contextMenu.min.css">
+    <link rel="stylesheet" href="selectric.css">
+    <script src="https://cdn.jsdelivr.net/jquery.selectric/1.11.1/jquery.selectric.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/solarized-dark.min.css">
 
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
@@ -237,7 +239,13 @@
             <div id="text-channels"></div>
             <hr>
             <div id="voice-channels"></div>
-            <!--Channel buttons go in here-->
+            <hr>
+            <select id="presence-changer">
+              <option value="online">Online</option>
+              <option value="idle">Idle</option>
+              <option value="dnd">Do not Disturb</option>
+              <option value="invisible">Invisible</option>
+            </select>
         </div>
         <div id="messages" class="messages">
             <!--Put messages in here-->
