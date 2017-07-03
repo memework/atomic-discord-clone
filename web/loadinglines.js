@@ -88,5 +88,9 @@ window.loading_lines = [
   "A A A A A PLS SEND THE READY EVENT U 🅱ENIS",
   "Ingesting 🅱enis",
   "🅱enis 🅱achine 🅱roke",
-  "🅱e the 🅱oading 🅱achine 🅱ou"
+  "🅱e the 🅱oading 🅱achine 🅱ou",
+  "oof",
+  "Playing ROBLOX",
+  "Thonking about itself",
+  "I'm conscious but you guys don't believe"
 ]
