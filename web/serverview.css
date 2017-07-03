@@ -331,7 +331,7 @@ input[type="text"] {
   width: 100%;
 }
 
-label[for="file-upload"], label[for="avatar-upload"] {
+label[for="file-upload"], label[for="avatar-upload"], label[for="edit-server-icon"] {
   display: block;
   height: 25px;
   text-align: center;

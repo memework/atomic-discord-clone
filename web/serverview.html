@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="https://rawgit.com/xLs51/Twemoji-Picker/master/css/twemoji-picker.css">
     <link rel="stylesheet" href="serverview.css" />
     <script src="https://rawgit.com/xLs51/Twemoji-Picker/master/js/twemoji-picker.js"></script>
-    <script src="http://twemoji.maxcdn.com/2/twemoji.min.js?2.2.3"></script>
+    <script src="https://twemoji.maxcdn.com/2/twemoji.min.js?2.2.3"></script>
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
         crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Arimo" rel="stylesheet" />
@@ -40,6 +40,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.8.0/jquery.modal.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.4.5/jquery.contextMenu.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.4.5/jquery.contextMenu.min.css">
+    <link rel="stylesheet" href="selectric.css">
+    <script src="https://cdn.jsdelivr.net/jquery.selectric/1.11.1/jquery.selectric.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/solarized-dark.min.css">
 
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
@@ -237,7 +239,13 @@
             <div id="text-channels"></div>
             <hr>
             <div id="voice-channels"></div>
-            <!--Channel buttons go in here-->
+            <hr>
+            <select id="presence-changer">
+              <option value="online">Online</option>
+              <option value="idle">Idle</option>
+              <option value="dnd">Do not Disturb</option>
+              <option value="invisible">Invisible</option>
+            </select>
         </div>
         <div id="messages" class="messages">
             <!--Put messages in here-->
@@ -264,6 +272,8 @@
         <div id="edit-server-modal" style="display:none;">
             <label for="edit-server-name">Server Name</label><br>
             <input type="text" id="edit-server-name" placeholder="Server Name"><br>
+            <label for="edit-server-icon">Upload new Icon</label>
+            <input type="file" id="edit-server-icon">
             <button id="edit-server" rel="modal:close">Edit Server</button>
         </div>
         <div id="edit-textchannel-modal" style="display:none;">

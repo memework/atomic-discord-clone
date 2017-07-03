@@ -631,6 +631,8 @@ function BotListeners() {
     })
   })
 
+  bot.on("presenceUpdate", loadMembers)
+
   bot.on("messageDelete", function (msg) {
     if (msg.channel.id != window.channelID) return
     document.getElementById("msg-" + msg.id).remove()
@@ -729,6 +731,18 @@ $(document).ready(function () {
       logger.debug(JSON.stringify(plugins))
     })
   }
+  $("select").selectric()
+  $("#presence-changer").on("change", function() {
+    let presence = this.value
+    // One of idle, invisible, afk, online
+    bot.user.setPresence({
+      status: presence
+    }).then(function() {
+      logger.ok("Set presence!")
+    }).catch(function(err) {
+      logger.warn("Heck! " + err)
+    })
+  })
   $(document).on("keypress", function (e) {
     var tag = e.target.tagName.toLowerCase()
     if (tag != "input" && tag != "textarea" && tag != "select" && !$(e.target).attr("contenteditable")) {
@@ -830,6 +844,51 @@ $(document).ready(function () {
   $("#messages").scroll(function () {
     if ($(this).scrollTop() === 0) {
       loadMessages()
+    }
+  })
+  $.contextMenu({
+    selector: ".server-icon",
+    callback: function (key, options) {
+      switch (key) {
+      case "delete": {
+        bot.guilds.get(options.$trigger[0].id).delete()
+        break
+      }
+      case "edit": {
+        let guild = bot.guilds.get(options.$trigger[0].id)
+        $("#edit-server-name").val(guild.name)
+        $("#edit-server-modal").modal()
+        $("#edit-server").one("click", function() {
+          var iconUpload = document.getElementById("edit-server-icon")
+          if(iconUpload.files[0]) {
+            var fr = new FileReader()
+            fr.onload = function () {
+              var base64 = this.result
+              guild.edit({
+                name: $("#edit-server-name").val() || guild.name,
+                icon: base64
+              }).then(function() {
+                ChannelChange(window.channelID)
+                loadServers()
+              }).catch(logger.warn)
+            }
+            fr.readAsDataURL(iconUpload.files[0])
+          } else {
+            guild.edit({
+              name: $("#edit-textchannel-name").val() || guild.name
+            }).then(function() {
+              ChannelChange(window.channelID)
+              loadServers()
+            }).catch(logger.warn)
+          }
+          $.modal.close()
+        })
+      }
+      }
+    },
+    items: {
+      delete: { name: "Delete", icon: "delete" },
+      edit: { name: "Edit", icon: "edit" },
     }
   })
   $.contextMenu({
@@ -1000,10 +1059,11 @@ function ChannelChange(channelID, silent, force) {
  * Populates the right pane with the member list
  *
  * @function
- * @param {GuildMember} memb - Optional. If given, it checks if the user is in the current guild before loading
+ * @param {GuildMember|User} memb - Optional. If given, it checks if the user is in the current guild before loading
  */
 function loadMembers(memb) {
-  if (memb && memb.guild && memb.guild.id != bot.channels.get(window.channelID).guild.id) return
+  if(memb && memb.guild) memb = memb.user
+  if(memb && memb.id && !bot.channels.get(window.channelID).guild.members.get(memb.id)) return
   var memberList = document.getElementById("member-list")
   memberList.innerHTML = ""
   var guild = bot.channels.get(window.channelID).guild
@@ -1158,7 +1218,7 @@ function loadServers() {
     var server = bot.guilds.get(srv)
     if (!server) return
     var servericon = server.iconURL("png", 128)
-    if (!servericon) servericon = "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(((server.name || "E R R O R").match(/\b(\w)/g) || ["ERROR"]).join(""))
+    if (!servericon) servericon = (!server.available || !server.name || !server.name.match(/\b(\w)/g)) ? "unavailable.png" : "https://dummyimage.com/256x256/ffffff/000000.png&text=" + encodeURI(server.name.match(/\b(\w)/g).join(""))
     if (server.unavailable) servericon = "unavailable.png"
     var servernode = document.createElement("a")
     servernode.href = "#"
