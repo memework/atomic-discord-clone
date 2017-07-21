@@ -92,5 +92,17 @@ window.loading_lines = [
   "oof",
   "Playing ROBLOX",
   "Thonking about itself",
-  "I'm conscious but you guys don't believe"
+  "I'm conscious but you guys don't believe",
+  "Opening WhatsApp...",
+  "Opening Telegram...",
+  "Opening Discord...",
+  "Opening Teamspeak",
+  "Destroying your backups",
+  "sanic: gotta go fast.",
+  "Creating tons of bots",
+  "Charging your battery in the speed of light",
+  "You should get water, its important.",
+  "Zzz... oh shit its time to load",
+  "Playing podcasts",
+  "You don't really like me, do you?"
 ]
