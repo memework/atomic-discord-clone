@@ -439,6 +439,14 @@ function addMessageToDOM(msg, complete) {
   })
   msgobj.appendChild(time)
 
+  let matches = message.match(/:([a-z]|[0-9])*:/gi)
+  for (let m in matches) {
+    let match = matches[m]
+    let emotename = match.replace(/:/g, "")
+    let emote = shortcodes[emotename]
+    if(emote) message = message.replace(match, emote)
+  }
+
   for (var short in shortcodes) {
     var myemotes = ""
     shortcodes[short].split("-").forEach(function (code) {
@@ -709,6 +717,23 @@ function voice(voiceChannelID) {
 }
 
 /**
+ * Find custom emotes (and soon™ normal emotes) and replace them with their proper markup (i.e. :Thonk: -> <:Thonk:123424123>)
+*/
+function findEmojis(input) {
+  let matches = input.match(/:([a-z]|[0-9])*:/gi)
+  for (let m in matches) {
+    let match = matches[m]
+    let emotename = match.replace(/:/g, "")
+    let emote = bot.emojis.find(function(em){
+      return em.name.toLowerCase() == emotename.toLowerCase()
+    })
+    if(!emote) emote = shortcodes[emotename]
+    if(emote) input = input.replace(match, emote)
+  }
+  return input
+}
+
+/**
  * Leaves all connected voice channels (if applicable) and destroys their attached microphones
  *
  * @function
@@ -837,7 +862,7 @@ $(document).ready(function () {
         ChannelChange(messageInput.value.split(" ")[1])
         return
       }
-      chan.send($("<pre>").html(messageInput.innerText.replace(/<br>/gi, "\n")).text())
+      chan.send(findEmojis($("<pre>").html(messageInput.innerText.replace(/<br>/gi, "\n")).text()))
       $("#message-input, .twemoji-textarea, .twemoji-textarea-duplicate").text("")
     }
   })
