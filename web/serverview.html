@@ -15,6 +15,9 @@
         if (process && window.localStorage.getItem("show-titlebar") != "false") {
             require("electron-titlebar")
             document.getElementsByTagName("html")[0].classList = "electron"
+            document.addEventListener("DOMContentLoaded", function() {
+              require("electron-css-reload")(250)
+            })
         }
     </script>
     <script>

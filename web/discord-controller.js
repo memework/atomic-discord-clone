@@ -484,9 +484,9 @@ function addMessageToDOM(msg, complete) {
 
   $(content).children("a").click(function () {
     var link = this.getAttribute("data-link")
-    if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*")) == link) {
+    if (link.match(new RegExp(inviteBase + "/" + "[A-Za-z0-9]*", "gi"))[0] == link) {
       logger.debug("Clicked gg link")
-      $.ajax({
+      $.ajax(endpoint + "/api/invite/" + link.split("/").pop(), {
         settings: {
           headers: {
             authorization: `Authorization:${bot.user.bot ? " Bot" : ""} ${token}`,
@@ -495,7 +495,6 @@ function addMessageToDOM(msg, complete) {
           }
         },
         success: function(data) {
-          console.log(data)
           logger.ok("Accepted invite")
           ChannelChange(data.channel.id)
           loadServers()
@@ -1180,7 +1179,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
   }
   if (window.currentMessages.channelID == window.channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
   bot.channels.get(window.channelID).fetchMessages(options).then(function (messages) {
-    logger.debug("Got messages " + typeof messages + " : " + messages.length)
+    logger.debug("Got messages " + typeof messages + " : " + messages.size)
     var oldScrollHeight = msgdom.scrollHeight
     var scrolltobottom = window.currentMessages.channelID == window.channelID
     if (scrolltobottom) {
