@@ -15,11 +15,11 @@ An alternative Discord client made in Electron!
 
 Make sure you have `npm` and `node` installed.
 ```bash
-git clone ssh://git@git.memework.org:2222/heatingdevice/atomic-discord.git
+git clone git@git.memework.org:heatingdevice/atomic-discord.git
 cd atomic-discord
 
 # install dependencies
-npm i --only=dev
+npm i
 
 # run the client
 npm start
