@@ -19,7 +19,7 @@ git clone git@git.memework.org:heatingdevice/atomic-discord.git
 cd atomic-discord
 
 # install dependencies
-npm i --only=dev
+npm i
 
 # run the client
 npm start
