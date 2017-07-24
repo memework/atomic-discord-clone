@@ -398,7 +398,7 @@ label[for="file-upload"], label[for="avatar-upload"], label[for="edit-server-ico
 h2.member-list-username {
   font-size: 1em;
   margin-left: 5px;
-  font-weight: bolder;
+  font-weight: lighter;
 }
 
 #messages .message .message-inner .images * {

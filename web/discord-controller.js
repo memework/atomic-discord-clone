@@ -1111,6 +1111,12 @@ function loadMembers(memb) {
     avatar.appendChild(presence)
     container.appendChild(avatar)
     container.appendChild(username)
+    if(user.user.presence.game) {
+      var playing = document.createElement("div")
+      playing.textContent = `${user.user.presence.type == 1 ? "Streaming" : "Playing"} ${user.user.presence.game.name}`
+      playing.classList = "member-list-playing"
+      container.appendChild(playing)
+    }
     container.id = user.user.id
     if (user.hoistRole) {
       if (!roles[user.hoistRole.id]) {
