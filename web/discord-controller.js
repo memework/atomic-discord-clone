@@ -1184,7 +1184,7 @@ function loadMessages(hideLoaderAfter) { // TODO: Move this to a web worker
     limit: 100
   }
   if (window.currentMessages.channelID == window.channelID && window.currentMessages.arr.length > 0) options.before = window.currentMessages.arr[0].id
-  bot.channels.get(window.channelID).fetchMessages(options).then(function (messages) {
+  bot.channels.get(window.channelID).messages.fetch(options).then(function (messages) {
     logger.debug("Got messages " + typeof messages + " : " + messages.size)
     var oldScrollHeight = msgdom.scrollHeight
     var scrolltobottom = window.currentMessages.channelID == window.channelID
