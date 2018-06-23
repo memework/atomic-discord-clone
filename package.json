@@ -36,8 +36,7 @@
     "live-server": "^1.2.0",
     "long": "^4.0.0",
     "node-microphone": "^0.1.3",
-    "node-notifier": "^5.1.2",
-    "speaker": "^0.3.0"
+    "node-notifier": "^5.1.2"
   },
   "devDependencies": {
     "asar": "^0.13.0",
@@ -80,5 +79,8 @@
         "deb"
       ]
     }
+  },
+  "optionalDependencies": {
+    "speaker": "^0.3.0"
   }
 }
